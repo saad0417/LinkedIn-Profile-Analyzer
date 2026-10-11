@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Parsewise
 
-## Getting Started
+ATS resume checker, resume builder and LinkedIn profile analyzer. Next.js 16 (App Router, Cache Components), TypeScript, Tailwind v4. No database: uploads are processed in memory and discarded.
 
-First, run the development server:
+## Run it
 
 ```bash
+npm install          # also copies pdf.js into public/vendor (postinstall)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+AI keys go in `.env.local` (gitignored; `.env.example` documents every variable):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `GEMINI_API_KEY`: the main provider.
+- `OPENROUTER_API_KEY`: optional backup. If a Gemini request fails (bad key, quota, timeout, outage) it is retried once on OpenRouter, using a free model by default.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Without either key everything works except the AI rewrites/reviews, and their buttons are hidden. Restart `npm run dev` (or rebuild in production) after changing keys.
 
-## Learn More
+## What's where
 
-To learn more about Next.js, take a look at the following resources:
+| Area | Path |
+|---|---|
+| Resume parsing + checks + scoring (deterministic) | `src/lib/analyze/` |
+| LinkedIn PDF parser + rubric | `src/lib/linkedin/` |
+| Overall ATS score formula | `src/lib/ats-score.ts` |
+| Templates (DOCX + PDF), registry | `src/lib/export/` |
+| LLM provider interface, prompts, guards | `src/lib/llm/` |
+| Upload sniffing, rate limits | `src/lib/security/` |
+| Research behind the rubrics | `docs/research/` |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tests
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npx tsx scripts/run-fixtures.ts           # 29 resume fixtures: expectations, determinism, rematch
+npx tsx scripts/run-linkedin-fixtures.ts  # 7 LinkedIn fixtures
+```
 
-## Deploy on Vercel
+## Deploying
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Set `NEXT_PUBLIC_SITE_URL` (canonical URLs, sitemap) and, optionally, `GEMINI_API_KEY`. On Vercel note the 4.5 MB request body limit for functions, which is below the app's 5 MB upload cap. Rate limits are in-memory per instance; swap `src/lib/security/rate-limit.ts` to Redis/Upstash for strict limits.

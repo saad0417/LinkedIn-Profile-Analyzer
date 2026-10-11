@@ -1,0 +1,22 @@
+Job Title: Senior Software Engineer (Backend)
+
+About the role
+We are looking for a Senior Software Engineer to join our payments platform team. You will design and operate high-throughput services in Go and Python on AWS.
+
+What you'll do
+- Design, build and operate distributed services handling millions of transactions per day
+- Own services end to end: design, CI/CD, monitoring and on-call
+- Work with PostgreSQL, Kafka and Redis at scale
+- Run workloads on Kubernetes with Terraform-managed infrastructure
+- Mentor engineers and lead technical design reviews
+
+Requirements
+- 5+ years of backend software engineering experience
+- Strong Go or Python skills
+- Experience with AWS, Kubernetes, Docker and Terraform
+- Solid understanding of PostgreSQL, Kafka and event-driven architecture
+- Experience with gRPC and microservices
+- Strong communication and collaboration skills; stakeholder management experience is a plus
+- Nice to have: Rust, GraphQL, Datadog
+
+We value ownership, mentoring and clear written communication.
