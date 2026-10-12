@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
-import { IBM_Plex_Mono, IBM_Plex_Sans, Instrument_Serif } from "next/font/google";
+import { Barlow_Condensed, IBM_Plex_Sans } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { AiProvider } from "@/components/ai-context";
@@ -8,38 +7,21 @@ import { aiEnabled } from "@/lib/ai-enabled";
 import { site } from "@/lib/site";
 import "./theme.css";
 
-const ancola = localFont({
-  src: [
-    { path: "./fonts/ancola-regular.ttf", weight: "400", style: "normal" },
-    { path: "./fonts/ancola-italic.ttf", weight: "400", style: "italic" },
-  ],
-  variable: "--font-ancola",
-  display: "swap",
-  adjustFontFallback: "Arial",
-});
-
-const instrument = Instrument_Serif({
-  weight: "400",
-  style: ["normal", "italic"],
+/** All headings, the wordmark and big numbers: a tall condensed grotesque (free stand-in for Vanguard CF). */
+const heading = Barlow_Condensed({
+  weight: ["500", "600", "700"],
   subsets: ["latin"],
-  variable: "--font-instrument",
+  variable: "--font-heading",
   display: "swap",
 });
 
 const plexSans = IBM_Plex_Sans({
-  weight: ["400", "500", "600"],
+  // Variable weight, so body text can sit at 450: a touch heavier than regular for easier reading.
   subsets: ["latin"],
   variable: "--font-plex-sans",
   display: "swap",
 });
 
-const plexMono = IBM_Plex_Mono({
-  weight: ["400", "500"],
-  subsets: ["latin"],
-  variable: "--font-plex-mono",
-  display: "swap",
-  preload: false,
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -86,7 +68,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${ancola.variable} ${instrument.variable} ${plexSans.variable} ${plexMono.variable} antialiased`}
+      className={`${heading.variable} ${plexSans.variable} antialiased`}
     >
       <body className="flex min-h-dvh flex-col">
         <a

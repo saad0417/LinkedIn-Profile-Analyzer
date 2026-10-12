@@ -155,14 +155,24 @@ export type TemplateId =
   | "entry"
   | "executive"
   | "compact"
+  | "corporate"
+  | "senior"
+  | "serif"
   // ATS modern
   | "modern"
   | "minimal"
   | "bold"
   | "timeline"
+  | "accent"
+  | "split"
+  | "monogram"
+  | "band"
   // Creative (not for ATS uploads)
   | "sidebar"
-  | "studio";
+  | "studio"
+  | "rail"
+  | "magazine"
+  | "noir";
 
 /** Clean, editable resume content that templates render. Built from ExtractedProfile. */
 export interface ResumeContent {

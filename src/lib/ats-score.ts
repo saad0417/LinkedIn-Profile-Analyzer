@@ -28,18 +28,18 @@ export function atsScore(s: Scores, checks: Check[] = []): number {
 
 export function atsBand(score: number): { label: string; tone: "pass" | "warn" | "fail"; note: string } {
   if (score >= 85)
-    return { label: "ATS friendly", tone: "pass", note: "Parses cleanly and reads well. Polish the details below." };
+    return { label: "ATS friendly", tone: "pass", note: "Hiring systems can read it well and it reads well to recruiters. Just polish the details below." };
   if (score >= 70)
-    return { label: "Mostly ATS friendly", tone: "warn", note: "A few fixes stand between you and a clean parse." };
+    return { label: "Mostly ATS friendly", tone: "warn", note: "A few fixes will make sure every part of your resume is read correctly." };
   if (score >= 50)
     return {
       label: "Needs work",
       tone: "fail",
-      note: "Parts of your resume are being lost or weakened. Start with the high-impact fixes.",
+      note: "Parts of your resume are being lost or weakened. Start with the fixes at the top of the list.",
     };
   return {
     label: "Not ATS friendly",
     tone: "fail",
-    note: "A parser loses much of this resume. Rebuilding it in a clean template will help most.",
+    note: "Hiring systems lose much of this resume. Rebuilding it in a clean template will help the most.",
   };
 }

@@ -318,7 +318,7 @@ export function buildDocument(content: ResumeContent, template: TemplateId): Doc
   if (content.headline) header.push({ kind: "headline", text: content.headline });
   const parts = contactParts(content);
   const side: Block[] = [];
-  if (style.columns?.header === "side") {
+  if (style.columns?.header === "side" || style.columns?.header === "main") {
     // Sidebar: contact details become their own "Contact" block in the side column.
     if (parts.length) {
       side.push({ kind: "heading", key: "contact", text: "Contact" });
@@ -352,6 +352,41 @@ export function contactRows(parts: string[], sep: string, maxWidth: number, meas
   }
   if (row) rows.push(row);
   return rows;
+}
+
+/**
+ * Contact rows for a split header: parts two per row, in order; a pair whose
+ * estimated width exceeds `maxWidth` gets a row per part. Deliberately an
+ * estimate (not a measurement) so DOCX and PDF break the rows identically.
+ */
+export function splitContactRows(parts: string[], sep: string, maxWidth: number, size: number): string[] {
+  const est = (t: string) => t.length * size * 0.5;
+  const rows: string[] = [];
+  for (let i = 0; i < parts.length; i += 2) {
+    const pair = parts.slice(i, i + 2);
+    const joined = pair.join(sep);
+    if (pair.length === 2 && est(joined) > maxWidth) rows.push(...pair);
+    else rows.push(joined);
+  }
+  return rows;
+}
+
+/**
+ * Monogram initials: first letter of the first and last name words
+ * ("Lucia di Ferraro" -> "LF"). Letters only; "" when there is no usable name.
+ */
+export function initials(name: string | null | undefined): string {
+  const all = cleanText(name)
+    .split(/\s+/)
+    .map((w) => w.replace(/[^\p{L}]/gu, ""))
+    .filter(Boolean);
+  // Skip lower-case particles ("di", "van") when the name has capitalised words.
+  const caps = all.filter((w) => /^\p{Lu}/u.test(w));
+  const words = caps.length ? caps : all;
+  if (!words.length) return "";
+  const first = words[0].charAt(0);
+  const last = words.length > 1 ? words[words.length - 1].charAt(0) : "";
+  return (first + last).toUpperCase();
 }
 
 /* ------------------------------ file names ------------------------------ */

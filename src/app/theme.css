@@ -26,10 +26,13 @@
   --color-bad: #9a3521;
   --color-bad-soft: #f3e1da;
 
-  --font-display: var(--font-ancola), "Futura", "Century Gothic", sans-serif;
-  --font-serif: var(--font-instrument), "Georgia", serif;
+  /* One readable heading face for both display and section headings. */
+  /* One condensed heading face (Barlow Condensed, a free stand-in for Vanguard CF) for every heading. */
+  --font-display: var(--font-heading), "Arial Narrow", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-heading), "Arial Narrow", ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
+  /* No monospace on the site: quotes, labels and data use the readable body face. */
+  --font-mono: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
 
   --radius-xs: 6px;
   --radius-sm: 10px;
@@ -74,6 +77,7 @@
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: 1rem;
+    font-weight: 450;
     line-height: 1.6;
     isolation: isolate;
   }
@@ -107,9 +111,50 @@
     text-underline-offset: 3px;
     text-decoration-thickness: 1px;
   }
+
+  /* Cursors. Tailwind v4 resets buttons to the arrow; restore the conventions. */
+  a[href],
+  button,
+  summary,
+  select,
+  [role="button"],
+  [role="tab"],
+  [role="radio"],
+  [role="menuitem"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"],
+  input[type="submit"],
+  label:has(> input[type="radio"]),
+  label:has(> input[type="checkbox"]) {
+    cursor: pointer;
+  }
+  input:not([type="checkbox"], [type="radio"], [type="file"], [type="submit"], [type="range"]),
+  textarea {
+    cursor: text;
+  }
+  button:disabled,
+  input:disabled,
+  textarea:disabled,
+  select:disabled,
+  [aria-disabled="true"],
+  label:has(> input:disabled) {
+    cursor: not-allowed;
+  }
+  [aria-busy="true"] {
+    cursor: progress;
+  }
+  abbr[title],
+  .cursor-help {
+    cursor: help;
+  }
   .font-display {
-    font-feature-settings: "kern";
-    letter-spacing: -0.01em;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+  }
+  .font-serif {
+    font-weight: 600;
+    letter-spacing: 0;
   }
 }
 
@@ -124,6 +169,13 @@
     .container-page {
       padding-inline: 32px;
     }
+  }
+
+  /* Monospace (parser output, quotes, tables) at medium weight: thin mono is hard to read on glass. */
+  .font-mono,
+  code,
+  pre {
+    font-weight: 500;
   }
 
   /* ---------- Glass surfaces ---------- */
@@ -180,6 +232,89 @@
     box-shadow: var(--glass-specular), 0 24px 60px -20px rgba(70, 45, 20, 0.35), 0 2px 6px rgba(60, 40, 20, 0.06);
   }
 
+  /* Navbar "lens" behind the current page: jelly-like tinted glass with a bright rim. */
+  .nav-pill {
+    border-radius: 999px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.12) 55%, rgba(255, 255, 255, 0.28) 100%),
+      rgba(28, 27, 25, 0.12);
+    -webkit-backdrop-filter: blur(14px) saturate(190%);
+    backdrop-filter: blur(14px) saturate(190%);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.95),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.45),
+      inset 0 -3px 6px -2px rgba(28, 27, 25, 0.14),
+      0 1px 2px rgba(28, 27, 25, 0.1),
+      0 6px 16px -6px rgba(28, 27, 25, 0.3);
+  }
+  .nav-pill-animate {
+    transition:
+      translate 560ms cubic-bezier(0.34, 1.5, 0.6, 1),
+      width 560ms cubic-bezier(0.34, 1.5, 0.6, 1),
+      scale 260ms cubic-bezier(0.34, 1.6, 0.6, 1),
+      opacity 200ms ease;
+  }
+  /* Stretch while travelling, then a soft wobble; two names so every move restarts it. */
+  .nav-pill-morph-a {
+    animation: nav-pill-jelly-a 620ms cubic-bezier(0.3, 1, 0.45, 1);
+  }
+  .nav-pill-morph-b {
+    animation: nav-pill-jelly-b 620ms cubic-bezier(0.3, 1, 0.45, 1);
+  }
+  /* Pressing a link squeezes the lens a little, like a finger on glass. */
+  nav:has(> a:active) > .nav-pill {
+    scale: 0.94 0.9;
+  }
+
+  /* ---------- Loading and AI states ---------- */
+  .fade-in {
+    animation: fade-in 320ms ease-out both;
+  }
+  /* Bars fill in from the left when results appear. */
+  .grow-x {
+    transform-origin: left center;
+    animation: grow-x 1100ms cubic-bezier(0.22, 1, 0.36, 1) 250ms both;
+  }
+  .step-pop {
+    animation: step-pop 360ms cubic-bezier(0.34, 1.6, 0.6, 1) both;
+  }
+  /* Light sweeping down a page, as if it's being read. */
+  .scan-beam {
+    top: -40px;
+    background: linear-gradient(180deg, rgba(122, 68, 25, 0) 0%, rgba(122, 68, 25, 0.14) 60%, rgba(122, 68, 25, 0.5) 96%, rgba(122, 68, 25, 0) 100%);
+    animation: scan 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+  /* A soft, slowly turning liquid-glass orb. */
+  .ai-orb {
+    background:
+      radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.95) 0 14%, transparent 34%),
+      conic-gradient(from 0deg, #e9b48a, #c98a5c, #9fb38f, #e7c9a5, #e9b48a);
+    box-shadow: inset 0 -3px 6px rgba(28, 27, 25, 0.18), 0 4px 14px -4px rgba(122, 68, 25, 0.45);
+    animation: orb-spin 3.2s linear infinite, orb-breathe 1.6s ease-in-out infinite;
+  }
+  .ai-orb::after {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(201, 138, 92, 0.45);
+    animation: orb-ring 1.6s ease-out infinite;
+  }
+  /* Text with a light moving through it. */
+  .shimmer-text {
+    background: linear-gradient(90deg, var(--color-ink) 0%, var(--color-ink) 38%, #c98a5c 50%, var(--color-ink) 62%, var(--color-ink) 100%);
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 2.2s linear infinite;
+  }
+  .skeleton {
+    background: linear-gradient(90deg, rgba(28, 27, 25, 0.06) 0%, rgba(28, 27, 25, 0.13) 45%, rgba(28, 27, 25, 0.06) 90%);
+    background-size: 220% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+
   /* Inset well for inputs and nested areas inside glass. */
   .glass-well {
     background: rgba(255, 255, 255, 0.5);
@@ -225,10 +360,10 @@
   }
 
   .eyebrow {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: 0.78rem;
-    font-weight: 500;
-    letter-spacing: 0.07em;
+    font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-ink-muted);
   }
@@ -292,25 +427,34 @@
     text-decoration-color: var(--color-accent);
     color: var(--color-accent);
   }
+  /*
+   * Inputs must never blend into the glass around them: solid white, a visible
+   * border, an inner shadow, and a placeholder much lighter than real text.
+   */
   .field {
     width: 100%;
-    background: rgba(255, 255, 255, 0.55);
-    border: 1px solid var(--glass-line);
+    background: #fffefc;
+    border: 1px solid rgba(28, 27, 25, 0.2);
     border-radius: var(--radius);
-    box-shadow: inset 0 1px 2px rgba(60, 40, 20, 0.06);
+    box-shadow: inset 0 1px 2px rgba(60, 40, 20, 0.07);
     padding: 0.8rem 0.95rem;
     font-size: 0.95rem;
+    font-weight: 450;
     color: var(--color-ink);
-    transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+  }
+  .field:hover {
+    border-color: rgba(28, 27, 25, 0.32);
   }
   .field::placeholder {
-    color: var(--color-ink-faint);
+    color: #a39d92;
+    font-weight: 400;
+    opacity: 1;
   }
   .field:focus {
     outline: none;
-    background: rgba(255, 255, 255, 0.85);
-    border-color: rgba(122, 68, 25, 0.45);
-    box-shadow: 0 0 0 4px rgba(122, 68, 25, 0.1);
+    border-color: var(--color-accent);
+    box-shadow: inset 0 1px 2px rgba(60, 40, 20, 0.05), 0 0 0 3px rgba(122, 68, 25, 0.16);
   }
 
   /* ---------- Long-form article typography for guides ---------- */
@@ -321,7 +465,9 @@
   }
   .prose-guide h2 {
     font-family: var(--font-serif);
-    font-size: 1.9rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    font-size: 1.85rem;
     line-height: 1.15;
     margin-top: 2.75rem;
     margin-bottom: 0.75rem;
@@ -433,6 +579,53 @@
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
+}
+
+@keyframes nav-pill-jelly-a {
+  0% { scale: 1 1; }
+  28% { scale: 1.14 0.82; }
+  55% { scale: 0.96 1.06; }
+  78% { scale: 1.02 0.98; }
+  100% { scale: 1 1; }
+}
+@keyframes nav-pill-jelly-b {
+  0% { scale: 1 1; }
+  28% { scale: 1.14 0.82; }
+  55% { scale: 0.96 1.06; }
+  78% { scale: 1.02 0.98; }
+  100% { scale: 1 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes step-pop {
+  0% { scale: 0.4; opacity: 0; }
+  100% { scale: 1; opacity: 1; }
+}
+@keyframes scan {
+  0% { top: -40px; }
+  100% { top: 100%; }
+}
+@keyframes orb-spin {
+  to { rotate: 360deg; }
+}
+@keyframes orb-breathe {
+  0%, 100% { scale: 1; }
+  50% { scale: 0.9; }
+}
+@keyframes orb-ring {
+  0% { opacity: 0.9; scale: 0.85; }
+  100% { opacity: 0; scale: 1.35; }
+}
+@keyframes shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -420,6 +420,22 @@ function looksLikeLocation(t: string): boolean {
   return capped && (t.includes(",") || LOC_WORDS.test(t) || words.length <= 3);
 }
 
+/**
+ * Looser test used only in the slot right after a role's dates, where LinkedIn
+ * prints the role location. Accepts full street addresses ("275, Block H-1,
+ * Johar Town, Lahore, Pakistan") that the general check rejects, but not
+ * sentences: needs 2+ commas, a place name at the end, no closing punctuation,
+ * and mostly capitalised or numeric words.
+ */
+function looksLikeAddress(t: string): boolean {
+  if (t.length > 120 || /[.;:!?]$/.test(t) || /@|https?:|www\./i.test(t) || /^[•\-–*]/.test(t)) return false;
+  if ((t.match(/,/g) ?? []).length < 2 || !/,\s*[\p{Lu}][\p{L} .'-]+$/u.test(t)) return false;
+  const words = t.split(/[\s,]+/).filter(Boolean);
+  if (words.length > 16) return false;
+  const proper = words.filter((w) => /^[\p{Lu}\d(]/u.test(w) || SMALL_WORDS.test(w)).length;
+  return proper / words.length >= 0.75;
+}
+
 interface MainResult {
   name: string | null;
   headline: string | null;
@@ -511,7 +527,20 @@ function paragraphs(lines: LiLine[], right: number): string {
   return out.trim();
 }
 
-function parseExperience(lines: LiLine[], body: number, right: number): LinkedInRole[] {
+/**
+ * Body text size inside one section. The whole main column can't be used: a
+ * long About is printed at 12pt, the same size as company names, while role
+ * dates and descriptions are 10.5pt. Date lines are always body size, so they
+ * are the most reliable reference; otherwise use the section's own text.
+ */
+function sectionBody(lines: LiLine[], columnBody: number): number {
+  const dated = lines.filter((l) => DATE_LINE.test(l.text) || /\(\s*\w+\s+\d{4}\s*[-–—]/.test(l.text));
+  if (dated.length) return bodySize(dated);
+  return lines.length ? Math.min(columnBody, bodySize(lines)) : columnBody;
+}
+
+function parseExperience(lines: LiLine[], columnBody: number, right: number): LinkedInRole[] {
+  const body = sectionBody(lines, columnBody);
   const roles: LinkedInRole[] = [];
   const big = (l: LiLine) => l.size > body * 1.04 || (l.bold && !DATE_LINE.test(l.text));
   let pending: LiLine[] = [];
@@ -568,7 +597,7 @@ function parseExperience(lines: LiLine[], body: number, right: number): LinkedIn
       continue;
     }
     if (cur) {
-      if (cur.afterDate && !cur.desc.length && cur.role.location === null && looksLikeLocation(l.text)) {
+      if (cur.afterDate && !cur.desc.length && cur.role.location === null && (looksLikeLocation(l.text) || looksLikeAddress(l.text))) {
         cur.role.location = l.text;
         cur.afterDate = false;
         continue;
@@ -606,7 +635,8 @@ function joinWrapped(ls: LiLine[]): string {
   return collapse(ls.map((l) => l.text).join(" "));
 }
 
-function parseEducation(lines: LiLine[], body: number, right: number): LinkedInEducation[] {
+function parseEducation(lines: LiLine[], columnBody: number, right: number): LinkedInEducation[] {
+  const body = sectionBody(lines, columnBody);
   const out: LinkedInEducation[] = [];
   let cur: { school: LiLine[]; detail: LiLine[] } | null = null;
   const items: { school: LiLine[]; detail: LiLine[] }[] = [];

@@ -31,6 +31,10 @@ interface Expect {
   publications?: number;
   summaryStarts?: string | null;
   summaryMinChars?: number;
+  /** Substrings the summary must contain. */
+  summaryIncludes?: string[];
+  /** No undecoded HTML entities ("&amp;", "&#39;", …) anywhere in rawText or the profile. */
+  noEntities?: boolean;
   roles?: number;
   roleAt?: Record<number, Partial<LinkedInRole>>;
   /** Roles (by index) that must have a description. */
@@ -165,6 +169,40 @@ const EXPECT: Record<string, Expect> = {
     ],
     score: [85, 100],
   },
+  // Real-export layout: 12pt About dominates the column (so body size must be
+  // measured per section), two-line company name, street-address location with
+  // no description, wrapped degree/date line, literal "&amp;" from LinkedIn.
+  "li-05-founder-long-about": {
+    path: "linkedin/li-05-founder-long-about.pdf",
+    looksLikeLinkedIn: true,
+    pages: 2,
+    name: "Hamza Rashidi",
+    headline: "Founder & CEO at Kestrelworks | Software Engineering Student | Building tools for small accounting firms",
+    location: "Lahore, Punjab, Pakistan",
+    email: "hamza.rashidi@example.com",
+    profileUrl: "www.linkedin.com/in/hamza-rashidi-kestrelworks",
+    websites: ["github.com/hrashidi-dev"],
+    topSkills: ["Product Development", "Next.js", "Financial Reporting"],
+    certifications: ["Foundations of Project Management"],
+    summaryStarts: "I'm the Founder & CEO of Kestrelworks",
+    summaryMinChars: 900,
+    summaryIncludes: ["into software — document request portals"],
+    noEntities: true,
+    roles: 2,
+    roleAt: {
+      0: { title: "Founder & CEO", company: "Kestrelworks", start: "2026-08", end: "present", dates: "August 2026 - Present (3 months)", location: "Lahore, Punjab, Pakistan" },
+      1: {
+        title: "Summer Intern, Audit and Assurance",
+        company: "Hartley Whitcombe Okafor Lindqvist & Partners LLP (a member firm of the Meridian Accounting Network)",
+        start: "2025-06",
+        end: "2025-08",
+        location: "48, Block C-2 Phase 3 Garden Town, Lahore, Pakistan",
+        description: null,
+      },
+    },
+    described: [0],
+    education: [{ school: "Ravi Valley Institute of Technology", degree: "Bachelor of Science, Software Engineering", dates: "September 2024 - September 2028" }],
+  },
   "sample-linkedin": {
     path: "../public/samples/sample-linkedin.pdf",
     looksLikeLinkedIn: true,
@@ -238,6 +276,14 @@ function check(r: LinkedInAnalysis, e: Expect, fail: (m: string) => void) {
   if (e.summaryStarts === null && p.summary !== null) fail(`summary expected null, got ${JSON.stringify(p.summary.slice(0, 40))}`);
   if (e.summaryStarts && !p.summary?.startsWith(e.summaryStarts)) fail(`summary should start “${e.summaryStarts}”, got ${JSON.stringify(p.summary?.slice(0, 40))}`);
   if (e.summaryMinChars && (p.summary?.length ?? 0) < e.summaryMinChars) fail(`summary ${p.summary?.length ?? 0} chars < ${e.summaryMinChars}`);
+  for (const s of e.summaryIncludes ?? []) if (!p.summary?.includes(s)) fail(`summary should include “${s}”`);
+  if (e.noEntities) {
+    const ent = /&(?:[a-z]+|#\d+|#x[0-9a-f]+);/i;
+    const inRaw = r.rawText.match(ent);
+    const inProfile = JSON.stringify(p).match(ent);
+    if (inRaw) fail(`rawText contains undecoded entity ${inRaw[0]}`);
+    if (inProfile) fail(`profile contains undecoded entity ${inProfile[0]}`);
+  }
   if (e.roles !== undefined) eq("experience.length", p.experience.length, e.roles);
   for (const [i, want] of Object.entries(e.roleAt ?? {})) {
     const got = p.experience[Number(i)];

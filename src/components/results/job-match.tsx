@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { updateSession } from "@/lib/client/session";
+import { Busy } from "@/components/loading";
 import type { AnalysisResult, AnalyzeResponse, KeywordHit } from "@/lib/types";
 
 export function JobMatch({ result, jd }: { result: AnalysisResult; jd: string | null }) {
@@ -54,7 +55,7 @@ export function JobMatch({ result, jd }: { result: AnalysisResult; jd: string | 
       />
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <button type="submit" className="btn btn-primary" disabled={busy || !text.trim()}>
-          {busy ? "Comparing…" : "Compare"}
+          {busy ? <Busy>Comparing…</Busy> : "Compare"}
         </button>
         {match && (
           <button type="button" className="text-sm text-ink-muted underline underline-offset-4" onClick={() => setEditing(false)}>

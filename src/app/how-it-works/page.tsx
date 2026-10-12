@@ -91,7 +91,7 @@ export default function HowItWorks() {
 
       <section id="ats-score" className="glass-strong mt-16 scroll-mt-24 p-7 sm:p-12" aria-labelledby="ats-h">
         <p className="eyebrow">The headline number</p>
-        <h2 id="ats-h" className="mt-3 font-serif text-[2.1rem] leading-[1.08] sm:text-[2.5rem]">
+        <h2 id="ats-h" className="mt-3 font-serif text-[2.1rem] leading-[1.08] sm:text-[2.4rem]">
           How the ATS score out of 100 is built.
         </h2>
         <p className="mt-4 max-w-3xl text-ink-muted">
@@ -117,7 +117,7 @@ export default function HowItWorks() {
 
       <section id="linkedin" className="glass mt-8 scroll-mt-24 p-7 sm:p-12" aria-labelledby="li-h">
         <p className="eyebrow">LinkedIn profiles</p>
-        <h2 id="li-h" className="mt-3 font-serif text-[2.1rem] leading-[1.08] sm:text-[2.5rem]">
+        <h2 id="li-h" className="mt-3 font-serif text-[2.1rem] leading-[1.08] sm:text-[2.4rem]">
           How the LinkedIn score works.
         </h2>
         <p className="mt-4 max-w-3xl text-ink-muted">
@@ -133,7 +133,7 @@ export default function HowItWorks() {
 
       <section id="limits" className="glass-strong mt-8 scroll-mt-24 p-7 sm:p-12">
         <p className="eyebrow">Limits</p>
-        <h2 className="mt-3 font-serif text-[2.1rem] leading-[1.08] sm:text-[2.5rem]">What we don&apos;t claim.</h2>
+        <h2 className="mt-3 font-serif text-[2.1rem] leading-[1.08] sm:text-[2.4rem]">What we don&apos;t claim.</h2>
         <ul className="mt-6 grid gap-6 text-[0.95rem] text-ink-muted md:grid-cols-2">
           <li>
             <strong className="block text-ink">We don&apos;t simulate a specific vendor.</strong>

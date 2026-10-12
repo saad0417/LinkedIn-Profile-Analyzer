@@ -50,7 +50,7 @@ export function ResultsView() {
               {pages ? ` · ${pages} ${pages === 1 ? "page" : "pages"}` : ""} · {result.document.wordCount} words
             </p>
             <h1 className="mt-3 font-display text-[2.2rem] leading-[1.12] sm:text-[3.2rem]">
-              {noText ? "The parser saw nothing." : "This is what the parser saw."}
+              {noText ? "We couldn't read any text." : "Your resume results"}
             </h1>
           </div>
           <Link
@@ -69,7 +69,7 @@ export function ResultsView() {
 
         <nav aria-label="On this page" className="mt-5 flex flex-wrap gap-2 text-sm">
           {[
-            ["#preview", "Parser view"],
+            ["#preview", "What the ATS sees"],
             ["#issues", `What to fix · ${toFix}`],
             ["#job-match", "Job match"],
             ["#download", "Download a fixed version"],
@@ -81,7 +81,11 @@ export function ResultsView() {
         </nav>
       </div>
 
-      <Section id="preview" title="Your document, and what came out of it" lede="Compare the two. Every empty field and every merged role on the right is something a recruiter searching their system won't find.">
+      <Section
+        id="preview"
+        title="What an ATS sees in your resume"
+        lede="Your file on the left, and what a hiring system pulled out of it on the right. Anything empty or mixed up on the right is something a recruiter won't find when they search."
+      >
         <ExtractionPreview result={result} file={file} />
       </Section>
 
@@ -90,7 +94,7 @@ export function ResultsView() {
         title="What to fix"
         lede={
           toFix
-            ? "Ordered by impact. Each one quotes your text and says exactly what to change."
+            ? "Most important first. Each one shows the part of your resume it's about and exactly what to change."
             : "Nothing is blocking the parser or weakening your content."
         }
       >
@@ -120,7 +124,7 @@ export function ResultsView() {
 
       <Section
         id="download"
-        title="Download a parse-safe version"
+        title="Download an ATS-friendly version"
         lede="Your content, poured into a clean single-column layout with standard headings, body-only contact details and a system font. Want to approve fixes and edit first? Use the resume builder."
       >
         <div className="mb-6">
@@ -150,7 +154,7 @@ function Section({
   return (
     <section id={id} className="container-page scroll-mt-20 pt-16 sm:pt-24" aria-labelledby={`${id}-h`}>
       <div className="mb-7 max-w-2xl">
-        <h2 id={`${id}-h`} className="font-serif text-[2rem] leading-[1.1] sm:text-[2.4rem]">
+        <h2 id={`${id}-h`} className="font-serif text-[2rem] leading-[1.1] sm:text-[2.3rem]">
           {title}
         </h2>
         <p className="mt-2 text-ink-muted">{lede}</p>

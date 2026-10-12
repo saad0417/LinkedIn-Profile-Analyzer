@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
 import { analyzeFile, setSession } from "@/lib/client/session";
+import { AnalyzingPanel, Busy } from "@/components/loading";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const ACCEPT =
@@ -75,7 +76,7 @@ export function Uploader({ autoFocusJd = false }: { autoFocusJd?: boolean }) {
         if (file) run(file, "file");
         else inputRef.current?.click();
       }}
-      className="glass overflow-hidden"
+      className={`glass overflow-hidden ${busy ? "max-sm:min-h-[480px]" : ""}`}
       aria-describedby={error ? ids.err : undefined}
     >
       <div className="grid md:grid-cols-2">
@@ -156,7 +157,7 @@ export function Uploader({ autoFocusJd = false }: { autoFocusJd?: boolean }) {
       <div className="flex flex-col gap-4 border-t border-[var(--glass-line)] bg-white/30 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <button type="submit" className="btn btn-primary" disabled={!!busy}>
-            {busy === "file" ? <Spinner label="Reading your file" /> : "Check my resume"}
+            {busy === "file" ? <Busy>Checking…</Busy> : "Check my resume"}
           </button>
           <button type="button" onClick={trySample} disabled={!!busy} className="text-left text-sm text-ink-muted underline decoration-rule-strong underline-offset-4 hover:text-ink disabled:opacity-50">
             {busy === "sample" ? "Loading the sample…" : "No resume to hand? Try a sample"}
@@ -172,19 +173,23 @@ export function Uploader({ autoFocusJd = false }: { autoFocusJd?: boolean }) {
           {error}
         </p>
       )}
-    </form>
-  );
-}
 
-function Spinner({ label }: { label: string }) {
-  return (
-    <span className="inline-flex items-center gap-2">
-      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.25" strokeWidth="2.5" />
-        <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-      </svg>
-      {label}
-    </span>
+      {busy && (
+        <div className="absolute inset-0 z-10 flex cursor-progress items-center justify-center overflow-y-auto bg-[rgba(255,254,251,0.88)] p-6 backdrop-blur-md sm:p-10">
+          <AnalyzingPanel
+            title={busy === "sample" ? "Checking the sample resume" : "Checking your resume"}
+            steps={[
+              "Reading your file",
+              "Extracting the text a parser would see",
+              "Checking layout, headings and contact details",
+              ...(jd.trim() ? ["Matching the job description"] : []),
+              "Scoring every check",
+            ]}
+            stepMs={650}
+          />
+        </div>
+      )}
+    </form>
   );
 }
 

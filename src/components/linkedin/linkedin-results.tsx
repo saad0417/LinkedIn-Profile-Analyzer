@@ -6,6 +6,7 @@ import { callLlm } from "@/lib/client/api";
 import { setLinkedIn, useLinkedIn, type LinkedInSession } from "@/lib/client/linkedin-session";
 import type { LinkedInAnalysis } from "@/lib/linkedin/types";
 import { useAi } from "@/components/ai-context";
+import { AiThinking, Busy, SkeletonLines, StepList } from "@/components/loading";
 import { ScoreRing } from "@/components/results/ats-hero";
 import { IssueList } from "@/components/results/issue-list";
 import { LinkedInUploader } from "./linkedin-uploader";
@@ -84,11 +85,9 @@ function Results({ session }: { session: LinkedInSession }) {
               <a key={s.id} href={`#sec-${s.id}`} className="group block">
                 <div className="flex items-baseline justify-between text-sm">
                   <span className="font-medium group-hover:text-accent">{s.label}</span>
-                  <span className="font-mono text-xs text-ink-muted tabular-nums">
-                    {s.score} · {s.weight}% of score
-                  </span>
+                  <span className="font-mono text-xs text-ink-muted tabular-nums">{s.score}/100</span>
                 </div>
-                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink/8">
+                <div className="grow-x mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink/8">
                   <div
                     className={`h-full rounded-full ${s.score >= 80 ? "bg-good" : s.score >= 55 ? "bg-warn" : "bg-bad"}`}
                     style={{ width: `${Math.max(3, s.score)}%` }}
@@ -152,6 +151,28 @@ function AiReview({ session }: { session: LinkedInSession }) {
   }
 
   if (!review && !ai) return null;
+  if (!review && state.busy) {
+    return (
+      <section className="glass mt-6 p-6 sm:p-8" aria-busy="true">
+        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <div className="min-w-0 flex-1">
+            <AiThinking label="Writing your profile review…" detail="Built only from what's on your profile. Usually 10–20 seconds." />
+            <SkeletonLines lines={3} className="mt-6 max-w-2xl" />
+            <div className="mt-8 grid gap-6 lg:grid-cols-2">
+              <SkeletonLines lines={4} />
+              <SkeletonLines lines={4} />
+            </div>
+          </div>
+          <div className="glass-well shrink-0 p-4 md:w-72">
+            <StepList
+              steps={["Reading your profile", "Finding strengths and gaps", "Drafting three headlines", "Rewriting your About section"]}
+              stepMs={2200}
+            />
+          </div>
+        </div>
+      </section>
+    );
+  }
   if (!review) {
     return (
       <section className="glass mt-6 flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
@@ -164,16 +185,16 @@ function AiReview({ session }: { session: LinkedInSession }) {
           {state.error && <p className="mt-2 text-sm text-warn">{state.error}</p>}
         </div>
         <button type="button" onClick={run} disabled={state.busy} className="btn btn-primary shrink-0">
-          {state.busy ? "Reading your profile…" : "Write my review"}
+          {state.busy ? <Busy>Writing…</Busy> : "Write my review"}
         </button>
       </section>
     );
   }
 
   return (
-    <section className="glass mt-6 p-6 sm:p-8" aria-labelledby="review-h">
+    <section className="glass fade-in mt-6 p-6 sm:p-8" aria-labelledby="review-h">
       <p className="eyebrow">AI review</p>
-      <h2 id="review-h" className="mt-2 font-serif text-[1.9rem] leading-tight">
+      <h2 id="review-h" className="mt-2 font-serif text-[1.85rem] leading-tight">
         What a recruiter would notice
       </h2>
       <p className="mt-3 max-w-3xl text-[1.02rem] leading-relaxed">{review.verdict}</p>

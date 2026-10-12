@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { nav, site } from "@/lib/site";
 
 export function Wordmark({ className = "" }: { className?: string }) {
   return (
-    <span className={`font-display text-[1.15rem] leading-none tracking-tight sm:text-[1.3rem] ${className}`}>
+    <span className={`font-display text-[1.35rem] leading-none sm:text-[1.6rem] ${className}`}>
       {site.name.toLowerCase()}
       <span className="text-accent">.</span>
     </span>
@@ -15,6 +15,12 @@ export function Wordmark({ className = "" }: { className?: string }) {
 }
 
 const menuLinks = [...nav, { href: "/how-it-works", label: "How scoring works" }];
+
+/** Which nav item a path belongs to (subpages light up their parent). */
+function activeFor(path: string): string | null {
+  if (path === "/" || path.startsWith("/results") || path.startsWith("/improve")) return "/";
+  return nav.find((n) => n.href !== "/" && (path === n.href || path.startsWith(`${n.href}/`)))?.href ?? null;
+}
 
 /**
  * A floating glass capsule, in the spirit of the iOS tab bar. Once the page
@@ -28,12 +34,16 @@ export function SiteHeader() {
   const [lastPath, setLastPath] = useState(pathname);
   const menuId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
+  // Set on click so the pill moves immediately, before the new page has loaded.
+  const [pending, setPending] = useState<string | null>(null);
 
-  // Close the menu whenever the route changes.
+  // Close the menu (and settle the pending pill) whenever the route changes.
   if (lastPath !== pathname) {
     setLastPath(pathname);
     setOpen(false);
+    setPending(null);
   }
+  const active = pending ?? activeFor(pathname);
 
   useEffect(() => {
     let frame = 0;
@@ -83,20 +93,7 @@ export function SiteHeader() {
           <Link href="/" aria-label={`${site.name} home`} className="shrink-0">
             <Wordmark />
           </Link>
-          <nav aria-label="Main" className="hidden items-center gap-0.5 text-[0.9rem] lg:flex">
-            {nav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={pathname === item.href ? "page" : undefined}
-                className={`rounded-full px-3 py-2 transition-colors hover:bg-white/60 hover:text-ink ${
-                  pathname === item.href ? "text-ink" : "text-ink-muted"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <DesktopNav active={active} onPick={setPending} />
           <div className="flex min-w-0 items-center gap-1">
             <Link
               href="/#check"
@@ -157,11 +154,11 @@ export function SiteHeader() {
               href={item.href}
               tabIndex={open ? 0 : -1}
               onClick={() => setOpen(false)}
-              aria-current={pathname === item.href ? "page" : undefined}
+              aria-current={activeFor(pathname) === item.href ? "page" : undefined}
               style={{ transitionDelay: open ? `${60 + i * 35}ms` : "0ms" }}
-              className={`flex items-center justify-between rounded-[var(--radius)] px-4 py-3.5 text-[1rem] transition-all duration-300 hover:bg-ink/5 ${
+              className={`flex items-center justify-between rounded-[var(--radius)] px-4 py-3.5 text-[1rem] transition-all duration-300 hover:bg-ink/5 active:scale-[0.97] ${
                 open ? "translate-x-0 opacity-100" : "translate-x-3 opacity-0"
-              } ${pathname === item.href ? "bg-ink/[0.06] font-medium" : ""} ${i === nav.length ? "mt-1 border-t border-[var(--glass-line)] text-ink-muted" : ""}`}
+              } ${activeFor(pathname) === item.href ? "nav-pill font-medium" : ""} ${i === nav.length ? "mt-1 border-t border-[var(--glass-line)] text-ink-muted" : ""}`}
             >
               {item.label}
               <span aria-hidden="true" className="text-ink-faint">
@@ -172,5 +169,75 @@ export function SiteHeader() {
         </nav>
       </div>
     </>
+  );
+}
+
+/**
+ * Desktop links with a glass "lens" behind the current page. The lens slides
+ * to the clicked item with a soft spring and a brief stretch, like the iOS tab
+ * bar; items press in slightly when tapped.
+ */
+function DesktopNav({ active, onPick }: { active: string | null; onPick: (href: string) => void }) {
+  const navRef = useRef<HTMLElement>(null);
+  const links = useRef(new Map<string, HTMLAnchorElement>());
+  const [pill, setPill] = useState<{ x: number; w: number } | null>(null);
+  const [animate, setAnimate] = useState(false);
+  const [morph, setMorph] = useState(0);
+  const last = useRef<string | null>(null);
+
+  const measure = useCallback(() => {
+    const el = active ? links.current.get(active) : null;
+    setPill(el ? { x: el.offsetLeft, w: el.offsetWidth } : null);
+  }, [active]);
+
+  useLayoutEffect(() => {
+    measure();
+    if (last.current !== null && last.current !== active) setMorph((m) => m + 1);
+    last.current = active;
+    // Only animate after the first placement, so the pill doesn't fly in on load.
+    const t = requestAnimationFrame(() => setAnimate(true));
+    return () => cancelAnimationFrame(t);
+  }, [active, measure]);
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(nav);
+    document.fonts?.ready.then(measure).catch(() => {});
+    return () => ro.disconnect();
+  }, [measure]);
+
+  return (
+    <nav ref={navRef} aria-label="Main" className="relative hidden items-center gap-0.5 text-[0.9rem] lg:flex">
+      <span
+        aria-hidden="true"
+        className={`nav-pill pointer-events-none absolute inset-y-0 left-0 ${morph % 2 ? "nav-pill-morph-a" : morph ? "nav-pill-morph-b" : ""} ${
+          animate ? "nav-pill-animate" : ""
+        }`}
+        style={{
+          translate: `${pill?.x ?? 0}px 0`,
+          width: pill?.w ?? 0,
+          opacity: pill ? 1 : 0,
+        }}
+      />
+      {nav.map((item) => (
+        <Link
+          key={item.href}
+          ref={(el) => {
+            if (el) links.current.set(item.href, el);
+            else links.current.delete(item.href);
+          }}
+          href={item.href}
+          onClick={() => onPick(item.href)}
+          aria-current={active === item.href ? "page" : undefined}
+          className={`relative rounded-full px-3.5 py-2 transition-[color,scale] duration-200 ease-out hover:text-ink active:scale-[0.96] ${
+            active === item.href ? "font-medium text-ink" : "text-ink-muted"
+          }`}
+        >
+          {item.label}
+        </Link>
+      ))}
+    </nav>
   );
 }

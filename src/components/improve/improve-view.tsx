@@ -10,6 +10,7 @@ import { useSession } from "@/lib/client/session";
 import { profileToResumeContent } from "@/lib/export/content";
 import type { AnalysisResult } from "@/lib/types";
 import { useAi } from "@/components/ai-context";
+import { AiThinking, AiWorking, Busy } from "@/components/loading";
 import { ScoreRing } from "@/components/results/ats-hero";
 import { StatusMark } from "@/components/results/ui";
 
@@ -288,20 +289,31 @@ function Improve({
               {ai && (
                 <div className="mb-4 flex flex-wrap items-center gap-3">
                   <button type="button" onClick={suggestBullets} disabled={bulletState.busy} className="btn btn-primary">
-                    {bulletState.busy ? "Writing suggestions…" : "Suggest rewrites with AI"}
+                    {bulletState.busy ? <Busy>Writing suggestions…</Busy> : "Suggest rewrites with AI"}
                   </button>
                   <span className="text-sm text-ink-muted">Or edit any bullet yourself below.</span>
                 </div>
               )}
               {bulletState.error && <p className="mb-3 text-sm text-warn">{bulletState.error}</p>}
-              <ul className="space-y-3">
+              {bulletState.busy && (
+                <div className="glass-well mb-4 p-4">
+                  <AiThinking
+                    label={`Rewriting ${weakBullets.length} bullet${weakBullets.length === 1 ? "" : "s"} for ${targetRole.trim() || "your role"}…`}
+                    detail="Using only your facts. Where a number would help, you'll see [metric] to fill in."
+                  />
+                </div>
+              )}
+              <ul className="space-y-3" aria-busy={bulletState.busy}>
                 {weakBullets.map((orig) => {
                   const s = bullets[orig];
                   const changed = s.text.trim() !== orig.trim();
                   return (
-                    <li key={orig} className="glass-well overflow-hidden">
+                    <li key={orig} className="glass-well relative overflow-hidden">
+                      {bulletState.busy && (
+                        <div className="skeleton pointer-events-none absolute inset-0 z-10 opacity-70" aria-hidden="true" />
+                      )}
                       {changed && (
-                        <p className="border-b border-[var(--glass-line)] px-3.5 py-2 font-mono text-[0.82rem] text-ink-faint line-through decoration-ink/20">
+                        <p className="border-b border-[var(--glass-line)] px-3.5 py-2 font-mono text-[0.92rem] text-ink-faint line-through decoration-ink/20">
                           {orig}
                         </p>
                       )}
@@ -323,7 +335,7 @@ function Improve({
                             })
                           }
                           rows={2}
-                          className="w-full resize-y bg-transparent text-[0.93rem] leading-relaxed outline-none"
+                          className="field resize-y !py-2.5 text-[0.95rem] leading-relaxed"
                         />
                       </div>
                     </li>
@@ -359,13 +371,18 @@ function Improve({
               disabled={summaryState.busy || !targetRole.trim()}
               className="btn btn-secondary"
             >
-              {summaryState.busy ? "Writing…" : summaryNew ? "Write another version" : "Write it with AI"}
+              {summaryState.busy ? <Busy>Writing…</Busy> : summaryNew ? "Write another version" : "Write it with AI"}
             </button>
             {!targetRole.trim() && <span className="text-sm text-ink-muted">Add a target role in step 1 first.</span>}
             {summaryState.error && <span className="text-sm text-warn">{summaryState.error}</span>}
           </div>
-          {summaryNew && (
-            <div className="glass-well mt-4 flex gap-3 px-3.5 py-3">
+          {summaryState.busy && (
+            <div className="mt-4">
+              <AiWorking label={`Writing a summary for ${targetRole.trim()}…`} lines={3} />
+            </div>
+          )}
+          {summaryNew && !summaryState.busy && (
+            <div className="glass-well fade-in mt-4 flex gap-3 px-3.5 py-3">
               <input
                 type="checkbox"
                 checked={summaryNew.approved}
@@ -377,7 +394,7 @@ function Improve({
                 value={summaryNew.text}
                 onChange={(e) => setSummaryNew({ ...summaryNew, text: e.target.value })}
                 rows={4}
-                className="w-full resize-y bg-transparent text-[0.93rem] leading-relaxed outline-none"
+                className="field resize-y !py-2.5 text-[0.95rem] leading-relaxed"
               />
             </div>
           )}

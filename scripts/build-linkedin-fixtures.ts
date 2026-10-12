@@ -1,5 +1,7 @@
 // Generates synthetic LinkedIn "Save to PDF" exports for the LinkedIn analyzer.
-//   npx tsx scripts/build-linkedin-fixtures.ts
+//   npx tsx scripts/build-linkedin-fixtures.ts                # all
+//   npx tsx scripts/build-linkedin-fixtures.ts li-05          # only files whose name contains "li-05"
+//   npx tsx scripts/build-linkedin-fixtures.ts --out .scratch # write everything into another directory
 // Writes fixtures/linkedin/*.pdf and public/samples/sample-linkedin.pdf.
 //
 // The layout mimics LinkedIn's own export: US Letter, a shaded left sidebar
@@ -11,7 +13,7 @@
 // at one company are grouped under the company line plus a total duration.
 // All people, companies and URLs are fictional.
 import { mkdirSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage, type RGB } from "pdf-lib";
 
 const ROOT = resolve(__dirname, "..");
@@ -51,6 +53,10 @@ interface LiSpec {
   honors?: string[];
   publications?: string[];
   summary?: string[];
+  /** Font size of the Summary text (default 10.5, like role descriptions). Real exports with a long About print it at 12pt. */
+  summarySize?: number;
+  /** Font size of the location line under the headline (default 10.5). */
+  locationSize?: number;
   experience: LiCompany[];
   education: LiEdu[];
 }
@@ -130,6 +136,9 @@ class Writer {
 
   /** Word-wrap text to a width; a single word wider than the column (a long URL) breaks mid-word, as in LinkedIn's export. */
   wrap(text: string, font: PDFFont, size: number, width: number): string[] {
+    // A literal "\n" reproduces a real export's line breaks: the lines are used as given, since
+    // LinkedIn's font metrics differ slightly from Helvetica's (a line it fitted may be a hair too wide here).
+    if (text.includes("\n")) return text.split("\n");
     const fits = (s: string) => font.widthOfTextAtSize(s, size) <= width;
     const out: string[] = [];
     let cur = "";
@@ -180,8 +189,8 @@ class Writer {
   headline(t: string) {
     this.put("main", t, 12, { gap: 4 });
   }
-  location(t: string) {
-    this.put("main", t, 10.5, { gap: 4, color: GREY });
+  location(t: string, size = 10.5) {
+    this.put("main", t, size, { gap: 4, color: GREY });
   }
   heading(t: string) {
     this.put("main", t, 15.75, { gap: 20 });
@@ -196,8 +205,8 @@ class Writer {
   meta(t: string) {
     this.put("main", t, 10.5, { gap: 1, color: GREY });
   }
-  body(t: string, gap = 4) {
-    this.put("main", t, 10.5, { gap });
+  body(t: string, gap = 4, size = 10.5) {
+    this.put("main", t, size, { gap });
   }
 
   footers() {
@@ -243,11 +252,11 @@ async function renderLinkedIn(s: LiSpec): Promise<Uint8Array> {
   // Main column.
   w.name(s.name);
   w.headline(s.headline);
-  w.location(s.location);
+  w.location(s.location, s.locationSize);
   if (s.summary?.length) {
     w.heading("Summary");
     // Bullet lines sit tight under each other; paragraphs get a blank-line gap.
-    s.summary.forEach((para, i) => w.body(para, i === 0 ? 0 : /^• /.test(para) && /^• /.test(s.summary![i - 1]) ? 2 : 9));
+    s.summary.forEach((para, i) => w.body(para, i === 0 ? 0 : /^• /.test(para) && /^• /.test(s.summary![i - 1]) ? 2 : 9, s.summarySize));
   }
   w.heading("Experience");
   s.experience.forEach((co, ci) => {
@@ -592,21 +601,74 @@ const SAMPLE: LiSpec = {
   education: [{ school: "University of Washington", degree: "Bachelor of Arts - BA, Communication", dates: "2017 - 2021" }],
 };
 
+/**
+ * Regression for a real export's layout (all content invented): a long About
+ * printed at 12pt, the same size as company names, so 12pt dominates the main
+ * column; company 12pt over title 11.5pt over 10.5pt dates; a company name
+ * that wraps onto two lines; a street address as a role location with no
+ * description after it; a degree line that wraps mid-date; and "&amp;" printed
+ * literally by LinkedIn.
+ */
+const FOUNDER: LiSpec = {
+  name: "Hamza Rashidi",
+  headline: "Founder & CEO at Kestrelworks | Software Engineering Student | Building tools for small accounting firms",
+  location: "Lahore, Punjab, Pakistan",
+  locationSize: 12,
+  contact: ["hamza.rashidi@example.com", "www.linkedin.com/in/hamza-rashidi-kestrelworks (LinkedIn)", "github.com/hrashidi-dev (Other)"],
+  topSkills: ["Product Development", "Next.js", "Financial Reporting"],
+  certifications: ["Foundations of Project Management"],
+  summarySize: 12,
+  summary: [
+    "I'm the Founder &amp; CEO of Kestrelworks, a small software studio building practical tools for accounting and audit firms in Pakistan. I started it after a summer inside a mid-sized audit practice, where I watched talented people lose whole evenings to copying numbers between spreadsheets, chasing clients for documents and rebuilding the same working papers every year.",
+    "Kestrelworks turns that pain into software — document request portals, reconciliation helpers and templates that remember last year's work. Alongside the company I'm studying Software Engineering full time, which keeps me close to new ideas and to a pool of classmates who want to ship real products. I care about clear interfaces, honest estimates and small teams that own their work end to end. If you run a practice that still lives in email threads and shared drives, or you are a student who wants to build something useful, I would love to hear from you — my inbox is open.",
+  ],
+  experience: [
+    {
+      company: "Kestrelworks",
+      roles: [
+        {
+          title: "Founder &amp; CEO",
+          start: [2026, 8],
+          end: "present",
+          location: "Lahore, Punjab, Pakistan",
+          description: [
+            "Started a software studio building document-request and reconciliation tools for small accounting firms.",
+            "• Shipped the first client portal; piloting it with three local practices.",
+            "• Run discovery interviews with partners and audit staff to choose what we build next.",
+            "• Handle sales, onboarding and support for pilot firms.",
+          ],
+        },
+      ],
+    },
+    {
+      company: "Hartley Whitcombe Okafor Lindqvist & Partners LLP (a member firm of the Meridian Accounting Network)",
+      roles: [{ title: "Summer Intern, Audit and Assurance", start: [2025, 6], end: [2025, 8], location: "48, Block C-2 Phase 3 Garden Town, Lahore, Pakistan" }],
+    },
+  ],
+  // The "\n" reproduces LinkedIn's wrap inside the date range ("September" / "2028)").
+  education: [{ school: "Ravi Valley Institute of Technology", degree: "Bachelor of Science, Software Engineering", dates: "September 2024 - September\n2028" }],
+};
+
 async function main() {
-  mkdirSync(OUT, { recursive: true });
-  mkdirSync(SAMPLE_OUT, { recursive: true });
-  const out: [string, LiSpec][] = [
-    ["li-01-strong.pdf", STRONG],
-    ["li-02-weak.pdf", WEAK],
-    ["li-03-multi-role.pdf", MULTI],
-    ["li-04-senior-3-page.pdf", SENIOR],
+  const args = process.argv.slice(2);
+  const outAt = args.indexOf("--out");
+  const outDir = outAt >= 0 ? resolve(args[outAt + 1]) : null;
+  const filter = args.find((a, i) => !a.startsWith("--") && (outAt < 0 || i !== outAt + 1)) ?? null;
+  const out: [string, string, LiSpec][] = [
+    [OUT, "li-01-strong.pdf", STRONG],
+    [OUT, "li-02-weak.pdf", WEAK],
+    [OUT, "li-03-multi-role.pdf", MULTI],
+    [OUT, "li-04-senior-3-page.pdf", SENIOR],
+    [OUT, "li-05-founder-long-about.pdf", FOUNDER],
+    [SAMPLE_OUT, "sample-linkedin.pdf", SAMPLE],
   ];
-  for (const [file, spec] of out) {
-    writeFileSync(join(OUT, file), await renderLinkedIn(spec));
-    console.log(`wrote fixtures/linkedin/${file}`);
+  for (const [dir, file, spec] of out) {
+    if (filter && !file.includes(filter)) continue;
+    const target = join(outDir ?? dir, file);
+    mkdirSync(outDir ?? dir, { recursive: true });
+    writeFileSync(target, await renderLinkedIn(spec));
+    console.log(`wrote ${relative(ROOT, target)}`);
   }
-  writeFileSync(join(SAMPLE_OUT, "sample-linkedin.pdf"), await renderLinkedIn(SAMPLE));
-  console.log("wrote public/samples/sample-linkedin.pdf");
 }
 
 main().catch((e) => {

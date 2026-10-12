@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { exportResume, saveFile } from "@/lib/client/api";
+import { Busy } from "@/components/loading";
 import { profileToResumeContent } from "@/lib/export/content";
 import { templates } from "@/lib/templates-meta";
 import type { AnalysisResult, ResumeContent, TemplateId } from "@/lib/types";
@@ -99,7 +100,7 @@ export function ExportPanel({ result, accepted }: { result: AnalysisResult; acce
           </div>
         </div>
         <button type="button" onClick={download} disabled={busy} className="btn btn-primary">
-          {busy ? "Building your file…" : "Download parse-safe version"}
+          {busy ? <Busy>Building your file…</Busy> : "Download ATS-friendly version"}
         </button>
       </div>
 

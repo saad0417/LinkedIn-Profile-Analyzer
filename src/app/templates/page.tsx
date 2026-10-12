@@ -53,7 +53,7 @@ export default function TemplatesPage() {
       <section className="mt-20 sm:mt-28" aria-labelledby="rules-h">
         <div className="max-w-2xl">
           <p className="eyebrow">What makes them parse-safe</p>
-          <h2 id="rules-h" className="mt-3 font-serif text-[2.1rem] leading-[1.08] sm:text-[2.6rem]">
+          <h2 id="rules-h" className="mt-3 font-serif text-[2.1rem] leading-[1.08] sm:text-[2.5rem]">
             Six rules every ATS-safe template follows.
           </h2>
         </div>

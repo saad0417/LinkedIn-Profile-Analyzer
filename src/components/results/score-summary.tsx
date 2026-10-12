@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CountUp } from "@/components/count-up";
 import type { AnalysisResult, Check } from "@/lib/types";
 import { anchorFor, scoreBand, sortChecks, statusBg, statusColor, StatusMark, type ScoreKind } from "./ui";
 
@@ -11,14 +12,16 @@ export function ScoreSummary({ result }: { result: AnalysisResult }) {
       <ScoreCard
         kind="parse"
         title="Parse Integrity"
-        blurb="How much of your resume survives being read by a parser: text, contact details, dates, headings and layout."
+        question="Can an ATS read your resume?"
+        blurb="Whether your text, contact details, dates, headings and layout come through intact when a system reads the file."
         score={result.scores.parseIntegrity}
         checks={by(["extraction", "layout"])}
       />
       <ScoreCard
         kind="content"
         title="Content"
-        blurb="Conventions recruiters expect: quantified bullets, strong openers, no gaps left unexplained."
+        question="Will a recruiter be impressed?"
+        blurb="Whether your bullets show results with numbers, start with strong verbs, and your sections are complete."
         score={result.scores.content}
         checks={by(["content"])}
       />
@@ -26,10 +29,11 @@ export function ScoreSummary({ result }: { result: AnalysisResult }) {
         <div className="flex flex-col justify-between gap-4 border-t border-[var(--glass-line)] p-6 sm:p-7 lg:border-l lg:border-t-0">
           <div>
             <h2 className="eyebrow">Job Match</h2>
-            <p className="mt-3 font-serif text-2xl leading-tight">Not scored yet</p>
+            <p className="mt-1 text-[0.95rem] font-medium">Does it fit the job you want?</p>
+            <p className="mt-3 font-serif text-2xl leading-tight">Add a job to see this</p>
             <p className="mt-2 text-sm text-ink-muted">
-              There is no honest match score without a job to match against. Paste a job description to see
-              which of its keywords and title your resume is missing.
+              Paste a job posting and we&apos;ll show which of its skills and job title are missing from your
+              resume.
             </p>
           </div>
           <a href="#job-match" className="btn btn-secondary self-start">
@@ -40,7 +44,8 @@ export function ScoreSummary({ result }: { result: AnalysisResult }) {
         <ScoreCard
           kind="match"
           title="Job Match"
-          blurb="Overlap with the job description you pasted: job title, hard skills and other keywords."
+          question="Does it fit the job you want?"
+          blurb="How many of the job's skills and its title appear in your resume."
           score={result.scores.jobMatch}
           checks={by(["match"])}
         />
@@ -52,12 +57,14 @@ export function ScoreSummary({ result }: { result: AnalysisResult }) {
 function ScoreCard({
   kind,
   title,
+  question,
   blurb,
   score,
   checks,
 }: {
   kind: ScoreKind;
   title: string;
+  question: string;
   blurb: string;
   score: number;
   checks: Check[];
@@ -72,19 +79,22 @@ function ScoreCard({
   return (
     <section className={`p-6 sm:p-7 ${borders}`} aria-label={`${title} score`}>
       <h2 className="eyebrow">{title}</h2>
+      <p className="mt-1 text-[0.95rem] font-medium">{question}</p>
       <div className="mt-3 flex items-end gap-3">
-        <span className="font-display text-[4.25rem] leading-[0.85] tracking-tight tabular-nums">{score}</span>
+        <span className="font-display text-[4.25rem] leading-[0.85] tracking-tight tabular-nums">
+          <CountUp value={score} delay={250} />
+        </span>
         <span className="pb-1 text-sm text-ink-muted">/ 100</span>
         <span className={`ml-auto pb-1 text-sm font-medium ${statusColor[band.tone]}`}>{band.label}</span>
       </div>
 
       {/* One segment per check, width by weight, coloured by status: the score, decomposed. */}
-      <div className="mt-5 flex h-2 gap-[3px] overflow-hidden rounded-full bg-ink/5" aria-hidden="true">
+      <div className="grow-x mt-5 flex h-2 gap-[3px] overflow-hidden rounded-full bg-ink/5" aria-hidden="true">
         {sorted.map((c) => (
           <span
             key={c.id}
             title={`${c.title}: ${c.status}`}
-            className={`${statusBg[c.status]} rounded-full ${c.status === "pass" ? "opacity-75" : ""}`}
+            className={`${statusBg[c.status]} cursor-help rounded-full ${c.status === "pass" ? "opacity-75" : ""}`}
             style={{ flexGrow: c.weight / totalWeight }}
           />
         ))}
@@ -109,9 +119,6 @@ function ScoreCard({
               <a href={`#${anchorFor(c.id)}`} className="flex items-center gap-3 py-2 hover:text-accent">
                 <StatusMark status={c.status} />
                 <span className="flex-1">{c.title}</span>
-                <span className="font-mono text-xs text-ink-faint tabular-nums">
-                  {c.status === "pass" ? c.weight : c.status === "warn" ? c.weight / 2 : 0}/{c.weight}
-                </span>
               </a>
             </li>
           ))}

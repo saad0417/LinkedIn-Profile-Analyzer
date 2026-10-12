@@ -41,30 +41,35 @@ export function TemplateLibrary() {
             <div className="relative aspect-[8.5/11] overflow-hidden rounded-[var(--radius)] bg-white shadow-[0_1px_2px_rgba(60,40,20,0.08)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={t.preview} alt={`Preview of the ${t.name} resume template`} loading="lazy" className="h-full w-full object-cover object-top" />
-              <span
-                className={`chip absolute left-3 top-3 !text-[0.78rem] font-medium ${
-                  t.atsSafe ? "!border-good/20 !bg-good-soft/90 text-good" : "!border-warn/25 !bg-warn-soft/95 text-warn"
-                }`}
-              >
-                {t.atsSafe ? "ATS-safe" : "Not for ATS uploads"}
-              </span>
             </div>
             <div className="flex flex-1 flex-col px-2 pb-2 pt-5">
-              <h2 className="font-serif text-[1.6rem] leading-tight">{t.name}</h2>
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                <h2 className="font-serif text-[1.6rem] leading-tight">{t.name}</h2>
+                <span
+                  className={`chip shrink-0 !text-[0.78rem] font-medium ${
+                    t.atsSafe ? "!border-good/20 !bg-good-soft/90 text-good" : "!border-warn/25 !bg-warn-soft/95 text-warn"
+                  }`}
+                >
+                  {t.atsSafe ? "ATS-safe" : "Not for ATS uploads"}
+                </span>
+              </div>
               <p className="mt-1 text-sm text-ink-muted">{t.description}</p>
               <p className="mt-3 text-sm">
                 <span className="font-medium">Best for:</span> <span className="text-ink-muted">{t.bestFor}</span>
               </p>
-              <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
+              <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-3 pt-5">
                 <button type="button" onClick={() => use(t.id)} className="btn btn-primary !px-4 !py-2 !text-sm">
                   Use this template
                 </button>
-                <a href={`/api/export?template=${t.id}&format=docx`} className="btn btn-quiet" download>
-                  Sample Word
-                </a>
-                <a href={`/api/export?template=${t.id}&format=pdf`} className="btn btn-quiet" download>
-                  Sample PDF
-                </a>
+                <span className="flex items-center gap-1 text-sm text-ink-muted">
+                  Sample:
+                  <a href={`/api/export?template=${t.id}&format=docx`} className="rounded-full px-2 py-1 font-medium text-ink hover:bg-white/70" download>
+                    Word
+                  </a>
+                  <a href={`/api/export?template=${t.id}&format=pdf`} className="rounded-full px-2 py-1 font-medium text-ink hover:bg-white/70" download>
+                    PDF
+                  </a>
+                </span>
               </div>
             </div>
           </article>

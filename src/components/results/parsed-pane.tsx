@@ -14,7 +14,7 @@ export function ParsedPane({ result }: { result: AnalysisResult }) {
   return (
     <div className="glass-strong overflow-hidden">
       <div className="flex items-center justify-between gap-3 border-b border-[var(--glass-line)] px-4 py-3 sm:px-5">
-        <span className="font-mono text-[0.8rem] uppercase tracking-[0.08em] text-ink-muted">Parser output</span>
+        <span className="font-mono text-[0.92rem] uppercase tracking-[0.08em] text-ink-muted">Parser output</span>
         <div role="tablist" aria-label="Parser output view" className="segmented">
           {(["fields", "raw"] as const).map((v) => (
             <button
@@ -35,7 +35,7 @@ export function ParsedPane({ result }: { result: AnalysisResult }) {
             The plain text extracted, in the order a parser reads it. Where lines from different columns or
             boxes run together, that is what a recruiter&apos;s system stored.
           </p>
-          <pre className="whitespace-pre-wrap break-words font-mono text-[0.82rem] leading-relaxed text-ink">
+          <pre className="whitespace-pre-wrap break-words font-mono text-[0.92rem] leading-relaxed text-ink">
             {result.rawText.trim() || "(no text could be extracted)"}
           </pre>
         </div>
@@ -52,7 +52,7 @@ export function ParsedPane({ result }: { result: AnalysisResult }) {
 
           {p.summary !== null && (
             <Group title="Summary">
-              <p className="font-mono text-[0.8rem] leading-relaxed">{p.summary}</p>
+              <p className="font-mono text-[0.92rem] leading-relaxed">{p.summary}</p>
             </Group>
           )}
 
@@ -62,7 +62,7 @@ export function ParsedPane({ result }: { result: AnalysisResult }) {
             ) : (
               <ol className="space-y-4">
                 {p.experience.map((r, i) => (
-                  <li key={i} className="font-mono text-[0.8rem] leading-relaxed">
+                  <li key={i} className="font-mono text-[0.92rem] leading-relaxed">
                     <div className="grid grid-cols-[5.5rem_1fr] gap-x-3 gap-y-0.5">
                       <Key>title</Key>
                       <Val v={r.title} />
@@ -95,7 +95,7 @@ export function ParsedPane({ result }: { result: AnalysisResult }) {
             ) : (
               <ul className="space-y-3">
                 {p.education.map((e, i) => (
-                  <li key={i} className="grid grid-cols-[5.5rem_1fr] gap-x-3 gap-y-0.5 font-mono text-[0.8rem]">
+                  <li key={i} className="grid grid-cols-[5.5rem_1fr] gap-x-3 gap-y-0.5 font-mono text-[0.92rem]">
                     <Key>school</Key>
                     <Val v={e.institution} />
                     <Key>degree</Key>
@@ -112,13 +112,13 @@ export function ParsedPane({ result }: { result: AnalysisResult }) {
             {p.skills.length === 0 ? (
               <Missing>No skills section was recognised.</Missing>
             ) : (
-              <p className="font-mono text-[0.8rem] leading-relaxed">{p.skills.join(" · ")}</p>
+              <p className="font-mono text-[0.92rem] leading-relaxed">{p.skills.join(" · ")}</p>
             )}
           </Group>
 
           {p.certifications.length > 0 && (
             <Group title="Certifications">
-              <p className="font-mono text-[0.8rem] leading-relaxed">{p.certifications.join(" · ")}</p>
+              <p className="font-mono text-[0.92rem] leading-relaxed">{p.certifications.join(" · ")}</p>
             </Group>
           )}
 
@@ -130,7 +130,7 @@ export function ParsedPane({ result }: { result: AnalysisResult }) {
                 {p.sections.map((s, i) => (
                   <li
                     key={i}
-                    className={`chip font-mono !text-[0.82rem] ${s.kind ? "text-ink" : "!border-warn/40 !bg-warn-soft/80 text-warn"}`}
+                    className={`chip cursor-help font-mono !text-[0.9rem] ${s.kind ? "text-ink" : "!border-warn/40 !bg-warn-soft/80 text-warn"}`}
                     title={s.kind ? `Recognised as ${s.kind}` : "Not a standard heading"}
                   >
                     {s.heading}
@@ -149,7 +149,7 @@ export function ParsedPane({ result }: { result: AnalysisResult }) {
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="px-4 py-4 sm:px-5">
-      <h3 className="mb-2.5 text-[0.8rem] font-semibold">{title}</h3>
+      <h3 className="mb-2.5 text-[0.9rem] font-semibold">{title}</h3>
       {children}
     </section>
   );
@@ -157,25 +157,25 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 
 function Field({ label, value, optional }: { label: string; value: string | null; optional?: boolean }) {
   return (
-    <div className="grid grid-cols-[5.5rem_1fr] gap-x-3 py-0.5 font-mono text-[0.8rem]">
+    <div className="grid grid-cols-[5.5rem_1fr] gap-x-3 py-0.5 font-mono text-[0.92rem]">
       <Key>{label.toLowerCase()}</Key>
       {value ? (
-        <span className="whitespace-pre-line break-all">{value}</span>
+        <span className="whitespace-pre-line break-all font-semibold">{value}</span>
       ) : (
-        <span className={optional ? "text-ink-faint" : "text-bad"}>{optional ? "not found" : "NOT FOUND"}</span>
+        <span className={optional ? "text-ink-muted" : "font-semibold text-bad"}>{optional ? "not found" : "NOT FOUND"}</span>
       )}
     </div>
   );
 }
 
 function Key({ children }: { children: React.ReactNode }) {
-  return <span className="text-ink-faint">{children}</span>;
+  return <span className="text-ink-muted">{children}</span>;
 }
 
 function Val({ v }: { v: string | null }) {
-  return v ? <span className="break-words">{v}</span> : <span className="text-bad">empty</span>;
+  return v ? <span className="break-words font-semibold">{v}</span> : <span className="font-semibold text-bad">empty</span>;
 }
 
 function Missing({ children }: { children: React.ReactNode }) {
-  return <p className="font-mono text-[0.8rem] text-bad">{children}</p>;
+  return <p className="font-mono text-[0.92rem] text-bad">{children}</p>;
 }

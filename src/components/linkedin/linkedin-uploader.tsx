@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
 import { analyzeLinkedInFile, setLinkedIn } from "@/lib/client/linkedin-session";
+import { AnalyzingPanel, Busy } from "@/components/loading";
 
 export function LinkedInUploader() {
   const router = useRouter();
@@ -53,7 +54,7 @@ export function LinkedInUploader() {
 
   return (
     <form
-      className="glass overflow-hidden"
+      className={`glass overflow-hidden ${busy ? "max-sm:min-h-[480px]" : ""}`}
       onSubmit={(e) => {
         e.preventDefault();
         if (file) run(file, "file");
@@ -107,7 +108,7 @@ export function LinkedInUploader() {
       <div className="flex flex-col gap-3 border-t border-[var(--glass-line)] bg-white/30 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <button type="submit" className="btn btn-primary" disabled={!!busy}>
-            {busy === "file" ? "Reading your profile…" : "Analyze my profile"}
+            {busy === "file" ? <Busy>Analyzing…</Busy> : "Analyze my profile"}
           </button>
           <button type="button" onClick={sample} disabled={!!busy} className="text-left text-sm text-ink-muted underline decoration-rule-strong underline-offset-4 hover:text-ink">
             {busy === "sample" ? "Loading the sample…" : "Try a sample profile"}
@@ -119,6 +120,20 @@ export function LinkedInUploader() {
         <p role="alert" className="border-t border-bad/20 bg-bad-soft/70 px-5 py-3 text-sm text-bad sm:px-7">
           {error}
         </p>
+      )}
+      {busy && (
+        <div className="absolute inset-0 z-10 flex cursor-progress items-center justify-center overflow-y-auto bg-[rgba(255,254,251,0.88)] p-6 backdrop-blur-md sm:p-8">
+          <AnalyzingPanel
+            title={busy === "sample" ? "Analyzing the sample profile" : "Analyzing your profile"}
+            steps={[
+              "Reading your LinkedIn PDF",
+              "Separating the sidebar from your experience",
+              "Checking headline, About and roles",
+              "Scoring all seven sections",
+            ]}
+            stepMs={650}
+          />
+        </div>
       )}
     </form>
   );

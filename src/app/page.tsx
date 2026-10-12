@@ -150,7 +150,7 @@ export default function Home() {
               Free ATS resume checker. No sign-up, nothing stored.
             </p>
             <h1 className="mt-6 font-display text-[2.4rem] leading-[1.12] tracking-tight sm:text-[3.4rem] lg:text-[3.9rem]">
-              See your resume the way the <span className="text-accent italic">ATS</span> sees it.
+              See your resume the way the <span className="text-accent">ATS</span> sees it.
             </h1>
             <p className="mt-6 max-w-xl text-[1.08rem] leading-relaxed text-ink-muted">
               Most applicant tracking systems don&apos;t reject resumes. They store them, and recruiters search
@@ -373,7 +373,7 @@ function SectionHead({ id, eyebrow, title, lede }: { id: string; eyebrow: string
   return (
     <div className="max-w-2xl">
       <p className="eyebrow">{eyebrow}</p>
-      <h2 id={id} className="mt-3 font-serif text-[2.1rem] leading-[1.08] sm:text-[2.7rem]">
+      <h2 id={id} className="mt-3 font-serif text-[2.1rem] leading-[1.08] sm:text-[2.55rem]">
         {title}
       </h2>
       {lede && <p className="mt-3 text-ink-muted">{lede}</p>}
@@ -396,11 +396,11 @@ function ParserSpecimen() {
         <span className="font-mono text-[0.8rem] uppercase tracking-[0.08em] text-ink-muted">Parser output</span>
         <span className="chip !border-bad/20 !bg-bad-soft/80 !text-[0.8rem] text-bad">3 fields damaged</span>
       </div>
-      <dl className="mt-3 space-y-1.5 font-mono text-[0.8rem]">
+      <dl className="mt-3 space-y-1.5 font-mono text-[0.86rem]">
         {rows.map(([k, v, ok]) => (
           <div key={k} className="grid grid-cols-[4.5rem_1fr] gap-3">
-            <dt className="text-ink-faint">{k}</dt>
-            <dd className={ok ? "text-ink" : "text-bad"}>{v}</dd>
+            <dt className="text-ink-muted">{k}</dt>
+            <dd className={`font-semibold ${ok ? "text-ink" : "text-bad"}`}>{v}</dd>
           </div>
         ))}
       </dl>

@@ -4,8 +4,24 @@
 const PUA_BULLETS = /[]/g;
 
 /** Normalise extracted text: unify bullet glyphs and spaces, drop zero-width characters. */
+const NAMED_ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
+
+/**
+ * Some exporters (LinkedIn's "Save to PDF" among them) print HTML entities
+ * literally, so "Founder & CEO" arrives as "Founder &amp; CEO". Decode the
+ * common named and numeric ones back to characters.
+ */
+export function decodeEntities(s: string): string {
+  if (!s.includes("&")) return s;
+  return s.replace(/&(?:#(\d{1,7})|#x([0-9a-f]{1,6})|(amp|lt|gt|quot|apos|nbsp));/gi, (m, dec, hex, name) => {
+    if (name) return NAMED_ENTITIES[name.toLowerCase()] ?? m;
+    const code = dec ? Number(dec) : parseInt(hex, 16);
+    return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : m;
+  });
+}
+
 export function normaliseText(s: string): string {
-  return s
+  return decodeEntities(s)
     .replace(PUA_BULLETS, "•")
     .replace(/[    - ]/g, " ")
     .replace(/[​-‍﻿­]/g, "")

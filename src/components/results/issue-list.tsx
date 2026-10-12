@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { acceptRewrite } from "@/lib/client/session";
 import { useAi } from "@/components/ai-context";
+import { AiWorking, SkeletonLines, AiThinking } from "@/components/loading";
 import { callLlm } from "@/lib/client/api";
 import type { Check, RewriteTarget } from "@/lib/types";
 import { Caret } from "./score-summary";
@@ -122,13 +123,13 @@ function IssueCard({
         </div>
 
         <h3 className="mt-2 text-lg font-semibold leading-snug">{c.title}</h3>
-        <p className="mt-1.5 text-[0.95rem] text-ink">{c.summary}</p>
+        <p className="mt-2 text-[1.02rem] leading-relaxed text-ink">{c.summary}</p>
 
         {c.evidence && c.evidence.length > 0 && targets.length === 0 && (
           <ul className="mt-4 space-y-2">
             {c.evidence.slice(0, 5).map((e, i) => (
               <li key={i} className="glass-well px-3.5 py-2.5">
-                <q className="font-mono text-[0.8rem] leading-relaxed text-ink before:content-none after:content-none">
+                <q className="font-mono text-[0.92rem] leading-relaxed text-ink before:content-none after:content-none">
                   {e.text}
                 </q>
                 {e.where && <span className="mt-0.5 block text-xs text-ink-muted">{e.where}</span>}
@@ -144,7 +145,7 @@ function IssueCard({
 
         {c.fix && (
           <div className="mt-4 flex gap-3 text-[0.95rem]">
-            <span className="shrink-0 font-semibold text-accent">Fix</span>
+            <span className="shrink-0 font-semibold text-accent">How to fix</span>
             <p>{c.fix}</p>
           </div>
         )}
@@ -165,10 +166,14 @@ function IssueCard({
               Explain this in plain English
             </button>
           ) : null}
-          {explain.state === "loading" && <span className="text-sm text-ink-muted">Writing an explanation…</span>}
         </div>
+        {explain.state === "loading" && (
+          <div className="mt-3">
+            <AiWorking label="Writing a plain-English explanation…" lines={3} />
+          </div>
+        )}
         {explain.state === "done" && (
-          <div className="glass-well mt-3 px-4 py-3 text-sm leading-relaxed text-ink">
+          <div className="glass-well fade-in mt-3 px-4 py-3 text-sm leading-relaxed text-ink">
             <p className="whitespace-pre-line">{explain.text}</p>
             <p className="mt-2 text-xs text-ink-faint">Written by AI from this finding. The score above is not.</p>
           </div>
@@ -212,13 +217,18 @@ function RewriteRow({
 
   return (
     <div className="glass-well overflow-hidden">
-      <p className="px-3.5 py-2.5 font-mono text-[0.8rem] leading-relaxed text-ink-muted">
+      <p className="px-3.5 py-2.5 font-mono text-[0.92rem] leading-relaxed text-ink-muted">
         <span className="sr-only">Original: </span>
         {target.text}
       </p>
 
-      {state === "done" ? (
-        <div className="border-t border-[var(--glass-line)] bg-white/60 px-3.5 py-3">
+      {state === "loading" ? (
+        <div className="border-t border-[var(--glass-line)] bg-white/50 px-3.5 py-3.5">
+          <AiThinking label={target.kind === "bullet" ? "Writing a stronger bullet…" : "Rewriting your summary…"} />
+          <SkeletonLines lines={target.kind === "bullet" ? 2 : 3} className="mt-3.5" />
+        </div>
+      ) : state === "done" ? (
+        <div className="fade-in border-t border-[var(--glass-line)] bg-white/60 px-3.5 py-3">
           <p className="text-[0.92rem] leading-relaxed">
             <Highlighted text={text} />
           </p>
@@ -267,14 +277,10 @@ function RewriteRow({
           <button
             type="button"
             onClick={go}
-            disabled={state === "loading" || (target.kind === "summary" && !role.trim())}
+            disabled={target.kind === "summary" && !role.trim()}
             className="btn btn-quiet self-start"
           >
-            {state === "loading"
-              ? "Rewriting…"
-              : target.kind === "bullet"
-                ? "Suggest a stronger bullet"
-                : "Rewrite summary for this role"}
+            {target.kind === "bullet" ? "Suggest a stronger bullet" : "Rewrite summary for this role"}
           </button>
           {state === "error" && <span className="text-sm text-warn">{text}</span>}
         </div>

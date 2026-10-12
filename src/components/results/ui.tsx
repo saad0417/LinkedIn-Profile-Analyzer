@@ -1,6 +1,6 @@
 import type { Check, CheckCategory, CheckStatus, Severity } from "@/lib/types";
 
-export const statusText: Record<CheckStatus, string> = { pass: "Pass", warn: "Warning", fail: "Fail" };
+export const statusText: Record<CheckStatus, string> = { pass: "Good", warn: "Could be better", fail: "Needs fixing" };
 export const severityText: Record<Severity, string> = {
   high: "High impact",
   medium: "Medium impact",

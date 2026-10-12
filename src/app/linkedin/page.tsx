@@ -102,7 +102,7 @@ export default function LinkedInPage() {
 
       <section className="container-page pt-20 sm:pt-28" aria-labelledby="export-h">
         <p className="eyebrow">Before you start</p>
-        <h2 id="export-h" className="mt-3 max-w-2xl font-serif text-[2.1rem] leading-[1.08] sm:text-[2.6rem]">
+        <h2 id="export-h" className="mt-3 max-w-2xl font-serif text-[2.1rem] leading-[1.08] sm:text-[2.5rem]">
           Get your profile PDF in four clicks.
         </h2>
         <ol className="glass mt-8 grid overflow-hidden sm:grid-cols-2 lg:grid-cols-4">
@@ -125,7 +125,7 @@ export default function LinkedInPage() {
         <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
           <div>
             <p className="eyebrow">What we score</p>
-            <h2 id="scored-h" className="mt-3 font-serif text-[2.1rem] leading-[1.08] sm:text-[2.6rem]">
+            <h2 id="scored-h" className="mt-3 font-serif text-[2.1rem] leading-[1.08] sm:text-[2.5rem]">
               Seven sections, each with clear rules.
             </h2>
             <p className="mt-4 text-ink-muted">
@@ -152,7 +152,7 @@ export default function LinkedInPage() {
       </section>
 
       <section className="container-page pt-20 sm:pt-28" aria-labelledby="li-faq-h">
-        <h2 id="li-faq-h" className="font-serif text-[2.1rem] leading-[1.08] sm:text-[2.6rem]">
+        <h2 id="li-faq-h" className="font-serif text-[2.1rem] leading-[1.08] sm:text-[2.5rem]">
           Questions
         </h2>
         <div className="glass mt-8 divide-y divide-[var(--glass-line)] px-5 sm:px-7">

@@ -53,13 +53,6 @@ export function TemplatePicker({
               <div className="relative aspect-[8.5/11] overflow-hidden rounded-[var(--radius)] bg-white shadow-[0_1px_2px_rgba(60,40,20,0.08)]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={t.preview} alt={`${t.name} template preview`} loading="lazy" className="h-full w-full object-cover object-top" />
-                <span
-                  className={`chip absolute left-2 top-2 !text-[0.75rem] font-medium ${
-                    t.atsSafe ? "!border-good/20 !bg-good-soft/90 text-good" : "!border-warn/25 !bg-warn-soft/95 text-warn"
-                  }`}
-                >
-                  {t.atsSafe ? "ATS-safe" : "Not for ATS uploads"}
-                </span>
               </div>
               <div className="flex flex-1 items-start gap-2 px-1 pb-1 pt-3">
                 <span
@@ -70,7 +63,10 @@ export function TemplatePicker({
                 />
                 <span>
                   <span className="block font-medium">{t.name}</span>
-                  <span className="block text-sm text-ink-muted">{t.blurb}</span>
+                  <span className={`block text-xs font-medium ${t.atsSafe ? "text-good" : "text-warn"}`}>
+                    {t.atsSafe ? "ATS-safe" : "Not for ATS uploads"}
+                  </span>
+                  <span className="mt-0.5 block text-sm text-ink-muted">{t.blurb}</span>
                 </span>
               </div>
             </label>

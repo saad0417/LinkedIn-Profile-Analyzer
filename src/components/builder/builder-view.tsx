@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { atsBand, atsScore } from "@/lib/ats-score";
 import { callLlm, exportResume, recheck, saveFile } from "@/lib/client/api";
 import { emptyContent, patchDraft, setDraft, useDraft, type Draft } from "@/lib/client/draft";
 import { getTemplate } from "@/lib/export/registry";
 import type { AnalysisResult, ResumeContent, TemplateId } from "@/lib/types";
 import { useAi } from "@/components/ai-context";
+import { Busy, StepList } from "@/components/loading";
 import { ScoreRing } from "@/components/results/ats-hero";
 import { PdfPages } from "@/components/results/document-pane";
 import { sortChecks, StatusMark } from "@/components/results/ui";
@@ -121,6 +122,36 @@ function Builder({ draft }: { draft: Draft }) {
   });
   const [showJd, setShowJd] = useState(!!draft.jobDescription);
   const [pickTemplate, setPickTemplate] = useState(false);
+  const [justPicked, setJustPicked] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Open the picker where the user is looking: scroll down to it.
+  useEffect(() => {
+    if (pickTemplate) pickerRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
+  }, [pickTemplate]);
+
+  useEffect(() => {
+    if (!justPicked) return;
+    const t = setTimeout(() => setJustPicked(false), 1400);
+    return () => clearTimeout(t);
+  }, [justPicked]);
+
+  function openPicker() {
+    if (pickTemplate) pickerRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
+    else setPickTemplate(true);
+  }
+
+  /** Close the picker and take the user back to the template panel. */
+  function closePicker(picked: boolean) {
+    setPickTemplate(false);
+    if (picked) setJustPicked(true);
+    requestAnimationFrame(() => {
+      // Desktop: the panel is sticky beside the form, so the top of the page shows it.
+      if (window.matchMedia("(min-width: 1024px)").matches) window.scrollTo({ top: 0, behavior: scrollBehavior() });
+      else panelRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
+    });
+  }
   const template = getTemplate(draft.template);
 
   async function polish() {
@@ -203,7 +234,7 @@ function Builder({ draft }: { draft: Draft }) {
                 strong bullets. It only uses facts you gave it.
               </p>
               <button type="button" onClick={polish} disabled={aiState.busy} className="btn btn-primary shrink-0">
-                {aiState.busy ? "Writing…" : "Write it with AI"}
+                {aiState.busy ? <Busy>Writing…</Busy> : "Write it with AI"}
               </button>
             </div>
             {aiState.error && <p className="mt-3 text-sm text-warn">{aiState.error}</p>}
@@ -385,22 +416,66 @@ function Builder({ draft }: { draft: Draft }) {
           </Card>
 
           {pickTemplate && (
-            <Card title="Choose a template" lede="ATS-safe templates are built to parse cleanly. Creative ones look great for emailing a person, but aren't meant for job-portal uploads.">
-              <TemplatePicker
-                value={draft.template}
-                onChange={(id) => {
-                  patchDraft({ template: id });
-                  setPickTemplate(false);
-                }}
-                columns="sm:grid-cols-2 xl:grid-cols-3"
-              />
-            </Card>
+            <div ref={pickerRef} className="scroll-mt-24">
+              <Card title="Choose a template" lede="ATS-safe templates are built to parse cleanly. Creative ones look great for emailing a person, but aren't meant for job-portal uploads.">
+                <TemplatePicker
+                  value={draft.template}
+                  onChange={(id) => {
+                    patchDraft({ template: id });
+                    closePicker(true);
+                  }}
+                  columns="sm:grid-cols-2 xl:grid-cols-3"
+                />
+                <button type="button" onClick={() => closePicker(false)} className="btn btn-quiet mt-5">
+                  Keep current template
+                </button>
+              </Card>
+            </div>
           )}
         </div>
 
-        <aside className="space-y-5 lg:sticky lg:top-24">
-          <OutputPanel draft={draft} templateName={template?.name ?? draft.template} atsSafe={template?.atsSafe ?? true} preview={template?.preview} onPick={() => setPickTemplate(true)} />
+        <aside ref={panelRef} className="scroll-mt-24 space-y-5 lg:sticky lg:top-24">
+          <OutputPanel
+            draft={draft}
+            templateName={template?.name ?? draft.template}
+            atsSafe={template?.atsSafe ?? true}
+            preview={template?.preview}
+            onPick={openPicker}
+            highlight={justPicked}
+          />
         </aside>
+      </div>
+      {aiState.busy && <WritingOverlay role={draft.targetRole.trim()} withJd={!!draft.jobDescription.trim()} />}
+    </div>
+  );
+}
+
+/** Shown while AI writes the resume: blocks edits that would be overwritten, and shows what's happening. */
+function WritingOverlay({ role, withJd }: { role: string; withJd: boolean }) {
+  return (
+    <div className="fixed inset-0 z-[60] flex cursor-wait items-center justify-center bg-[rgba(250,248,244,0.6)] p-4 backdrop-blur-md">
+      <div role="status" aria-live="polite" className="glass-strong fade-in w-full max-w-md p-7 sm:p-9">
+        <div className="flex items-center gap-4">
+          <span className="ai-orb relative h-12 w-12 shrink-0 rounded-full" aria-hidden="true" />
+          <div>
+            <p className="font-display text-[1.7rem] leading-tight">Writing your resume</p>
+            <p className="shimmer-text text-sm font-medium">for {role || "your target role"}</p>
+          </div>
+        </div>
+        <div className="mt-6">
+          <StepList
+            steps={[
+              "Reading your notes",
+              ...(withJd ? ["Reading the job description"] : []),
+              "Writing a summary for the role",
+              "Turning notes into strong bullets",
+              "Ordering skills by relevance",
+              "Checking nothing was invented",
+            ]}
+            stepMs={1400}
+          />
+        </div>
+        <p className="mt-6 text-xs text-ink-muted">Uses only the facts you entered. This can take up to half a minute.</p>
       </div>
     </div>
   );
@@ -412,12 +487,14 @@ function OutputPanel({
   atsSafe,
   preview,
   onPick,
+  highlight,
 }: {
   draft: Draft;
   templateName: string;
   atsSafe: boolean;
   preview?: string;
   onPick: () => void;
+  highlight: boolean;
 }) {
   const [busy, setBusy] = useState<null | "docx" | "pdf" | "preview" | "check">(null);
   const [error, setError] = useState<string | null>(null);
@@ -454,7 +531,11 @@ function OutputPanel({
 
   return (
     <>
-      <div className="glass-strong p-5">
+      <div
+        className={`glass-strong p-5 transition-shadow duration-500 ${
+          highlight ? "shadow-[0_0_0_3px_rgba(63,107,74,0.35),var(--glass-shadow)]" : ""
+        }`}
+      >
         <p className="eyebrow">Template</p>
         <div className="mt-3 flex gap-4">
           {preview && (
@@ -474,22 +555,30 @@ function OutputPanel({
 
         <div className="mt-5 grid grid-cols-2 gap-2">
           <button type="button" onClick={() => run("docx")} disabled={!!busy} className="btn btn-primary !px-3">
-            {busy === "docx" ? "Building…" : "Word"}
+            {busy === "docx" ? <Busy>Word</Busy> : "Word"}
           </button>
           <button type="button" onClick={() => run("pdf")} disabled={!!busy} className="btn btn-primary !px-3">
-            {busy === "pdf" ? "Building…" : "PDF"}
+            {busy === "pdf" ? <Busy>PDF</Busy> : "PDF"}
           </button>
           <button type="button" onClick={() => run("preview")} disabled={!!busy} className="btn btn-secondary col-span-2">
-            {busy === "preview" ? "Rendering…" : "Preview"}
+            {busy === "preview" ? <Busy>Rendering preview…</Busy> : "Preview"}
           </button>
           <button type="button" onClick={() => run("check")} disabled={!!busy} className="btn btn-secondary col-span-2">
-            {busy === "check" ? "Checking…" : "Check its ATS score"}
+            {busy === "check" ? <Busy>Checking…</Busy> : "Check its ATS score"}
           </button>
         </div>
         {error && (
           <p role="alert" className="mt-3 text-sm text-bad">
             {error}
           </p>
+        )}
+        {busy === "check" && (
+          <div className="glass-well fade-in mt-4 p-4" role="status" aria-live="polite">
+            <StepList
+              steps={["Building your file in this template", "Running the same checks as an upload", "Scoring"]}
+              stepMs={900}
+            />
+          </div>
         )}
         <p className="mt-4 text-xs text-ink-muted">
           Search the file for <span className="font-mono text-accent">[metric]</span> before you send it and replace
@@ -551,6 +640,10 @@ function OutputPanel({
   );
 }
 
+function scrollBehavior(): ScrollBehavior {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+}
+
 function Card({ title, lede, children }: { title: string; lede?: string; children: React.ReactNode }) {
   return (
     <section className="glass p-5 sm:p-7">
@@ -563,8 +656,8 @@ function Card({ title, lede, children }: { title: string; lede?: string; childre
 
 function Field({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
   return (
-    <label className="mt-3 block first:mt-0">
-      <span className="mb-1.5 block text-sm font-medium">
+    <label className="mt-3 block">
+      <span className="mb-1.5 block text-sm font-semibold text-ink">
         {label}
         {required && <span className="text-accent"> *</span>}
         {hint && <span className="ml-2 font-normal text-ink-muted">{hint}</span>}
