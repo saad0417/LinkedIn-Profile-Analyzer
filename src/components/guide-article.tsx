@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, ldIds, orgRef } from "@/components/json-ld";
+import { pageMetadata } from "@/lib/seo";
 import { guides, site, type Guide } from "@/lib/site";
 
 export function guideMetadata(slug: Guide["slug"]): Metadata {
   const g = guides.find((x) => x.slug === slug)!;
-  return {
-    title: g.title,
+  return pageMetadata({
+    path: `/guides/${g.slug}`,
+    title: g.seoTitle,
+    socialTitle: g.title,
     description: g.description,
-    alternates: { canonical: `/guides/${g.slug}` },
-    openGraph: { type: "article", url: `/guides/${g.slug}`, title: g.title, description: g.description, publishedTime: g.published },
-  };
+    article: { publishedTime: g.published, modifiedTime: g.updated },
+  });
 }
 
 function formatDate(iso: string) {
@@ -41,17 +43,20 @@ export function GuideArticle({
             "@type": "Article",
             headline: g.title,
             description: g.description,
+            image: `${url}/opengraph-image`,
             datePublished: g.published,
-            dateModified: g.published,
+            dateModified: g.updated,
+            inLanguage: "en",
             mainEntityOfPage: url,
-            author: { "@type": "Organization", name: site.name, url: site.url },
-            publisher: { "@type": "Organization", name: site.name, url: site.url },
+            isPartOf: { "@id": ldIds.website() },
+            author: { "@type": "Organization", "@id": ldIds.organization(), name: site.name, url: `${site.url}/` },
+            publisher: orgRef(),
           },
           {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Home", item: site.url },
+              { "@type": "ListItem", position: 1, name: "Home", item: `${site.url}/` },
               { "@type": "ListItem", position: 2, name: "Guides", item: `${site.url}/guides` },
               { "@type": "ListItem", position: 3, name: g.short, item: url },
             ],
@@ -75,7 +80,13 @@ export function GuideArticle({
         <h1 className="font-display text-[2.1rem] leading-[1.14] sm:text-[3.1rem]">{g.title}</h1>
         <p className="mt-5 text-[1.08rem] text-ink-muted">{g.description}</p>
         <p className="mt-5 font-mono text-xs uppercase tracking-[0.08em] text-ink-faint">
-          <time dateTime={g.published}>{formatDate(g.published)}</time> · {readMinutes} min read
+          <time dateTime={g.published}>{formatDate(g.published)}</time>
+          {g.updated !== g.published && (
+            <>
+              {" "}· Updated <time dateTime={g.updated}>{formatDate(g.updated)}</time>
+            </>
+          )}{" "}
+          · {readMinutes} min read
         </p>
       </header>
 

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { site } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Terms of use",
-  description: `The terms for using ${site.name}'s free resume checker, resume builder and LinkedIn profile analyzer.`,
-  alternates: { canonical: "/terms" },
-};
+export const metadata: Metadata = pageMetadata({
+  path: "/terms",
+  title: "Terms of Use",
+  description: `The terms for using ${site.name}'s free ATS resume checker, resume builder and LinkedIn profile analyzer: fair use, what scores mean, AI and your content.`,
+});
 
 export default function Terms() {
   return (

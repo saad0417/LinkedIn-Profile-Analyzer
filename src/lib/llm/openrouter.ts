@@ -2,12 +2,28 @@ import { LLM_SETTINGS, LLMProviderError, type CompleteOptions, type LLMProvider 
 
 const ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 
-/** OpenRouter's OpenAI-compatible chat completions API, via plain fetch. */
+/** Extra output room for reasoning models, whose hidden reasoning counts against max_tokens. */
+const REASONING_HEADROOM = 800;
+
+/**
+ * OpenRouter's OpenAI-compatible chat completions API, via plain fetch.
+ * `model` may be a comma-separated list: OpenRouter then tries each in order
+ * (its `models` fallback), which keeps the free backup usable when one free
+ * model is rate-limited upstream.
+ */
 export class OpenRouterProvider implements LLMProvider {
+  private readonly models: string[];
+
   constructor(
     private readonly apiKey: string,
-    private readonly model: string,
-  ) {}
+    model: string,
+  ) {
+    this.models = model
+      .split(",")
+      .map((m) => m.trim())
+      .filter(Boolean)
+      .slice(0, 3);
+  }
 
   async complete(system: string, user: string, options: CompleteOptions = {}): Promise<string> {
     let res: Response;
@@ -22,7 +38,10 @@ export class OpenRouterProvider implements LLMProvider {
           "X-Title": "Parsewise",
         },
         body: JSON.stringify({
-          model: this.model,
+          model: this.models[0],
+          ...(this.models.length > 1 ? { models: this.models } : {}),
+          // Keep any reasoning short and out of the returned text.
+          reasoning: { effort: "low", exclude: true },
           messages: [
             { role: "system", content: system },
             { role: "user", content: user },
@@ -30,7 +49,7 @@ export class OpenRouterProvider implements LLMProvider {
           temperature: LLM_SETTINGS.temperature,
           // No response_format: json_object mode rejects top-level arrays on some
           // models. Callers parse JSON defensively instead.
-          max_tokens: options.maxOutputTokens ?? LLM_SETTINGS.maxOutputTokens,
+          max_tokens: (options.maxOutputTokens ?? LLM_SETTINGS.maxOutputTokens) + REASONING_HEADROOM,
           stream: false,
         }),
         signal: AbortSignal.timeout(options.timeoutMs ?? LLM_SETTINGS.timeoutMs),

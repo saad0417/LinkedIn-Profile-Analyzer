@@ -50,7 +50,9 @@ const noop = () => () => {};
 export function BuilderView() {
   const draft = useDraft();
   const onClient = useSyncExternalStore(noop, () => true, () => false);
-  if (!onClient) return <div className="container-page min-h-[60vh] py-14" aria-busy="true" />;
+  // Server render (and first client paint) shows the start screen, so crawlers and the first
+  // paint get real content; a saved draft, which only exists in this browser, swaps in after.
+  if (!onClient) return <StartScreen />;
   if (!draft) return <StartScreen />;
   return <Builder draft={draft} />;
 }

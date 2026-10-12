@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Privacy policy",
+export const metadata: Metadata = pageMetadata({
+  path: "/privacy",
+  title: "Privacy Policy",
   description:
     "Your resume and LinkedIn PDF are processed in memory and never stored. What we do and don't keep, what goes to the AI provider, and what stays in your browser.",
-  alternates: { canonical: "/privacy" },
-};
+});
 
 export default function Privacy() {
   return (

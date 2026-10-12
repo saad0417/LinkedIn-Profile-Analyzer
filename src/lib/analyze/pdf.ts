@@ -57,11 +57,42 @@ const BOLD_RE = /bold|black|heavy|semibold|demibold|demi\b|extrabold|ultrabold/i
 /** Fewer non-space characters than this on a page means it is effectively an image. */
 const TEXTLESS_CHARS = 25;
 
+/**
+ * Resource limits for untrusted PDFs (a 5 MB file can still describe a huge
+ * amount of work). Pages past the cap are not read (`pageCount` still reports
+ * the real number, so the length check works). The time budget is checked
+ * around every pdf.js call; the route's maxDuration is the final backstop.
+ */
+export const PDF_LIMITS = {
+  /** Resume analysis: anything past page 15 isn't a resume an ATS reads anyway. */
+  pages: 15,
+  /** LinkedIn exports of long careers run longer than resumes. */
+  linkedinPages: 20,
+  /** Whole document, including loading. */
+  timeMs: 15_000,
+  /** Text items on one page (dense real pages have a few thousand at most). */
+  itemsPerPage: 10_000,
+} as const;
+
+const TOO_COMPLEX =
+  "This PDF is too complex for us to read in time. Export it to PDF again from the app that made it and try once more.";
+
+/** Reject `p` once the deadline passes (pdf.js work is then abandoned and the document destroyed by the caller). */
+function withDeadline<T>(p: Promise<T>, deadline: number): Promise<T> {
+  const left = deadline - Date.now();
+  if (left <= 0) return Promise.reject(new UnreadableDocumentError("corrupt", TOO_COMPLEX));
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new UnreadableDocumentError("corrupt", TOO_COMPLEX)), left);
+  });
+  return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
+}
+
 type PdfDoc = Awaited<ReturnType<PdfJs["getDocument"]>["promise"]>;
 type PdfPage = Awaited<ReturnType<PdfDoc["getPage"]>>;
 
 /** Open a PDF with pdf.js; maps password and parse failures to UnreadableDocumentError. */
-async function openPdf(buf: Uint8Array): Promise<{ pdfjs: PdfJs; doc: PdfDoc; destroy: () => Promise<void> }> {
+async function openPdf(buf: Uint8Array, deadline: number): Promise<{ pdfjs: PdfJs; doc: PdfDoc; destroy: () => Promise<void> }> {
   const pdfjs = await loadPdfjs();
   // pdf.js may take ownership of the buffer; give it a copy.
   const data = new Uint8Array(buf);
@@ -77,10 +108,11 @@ async function openPdf(buf: Uint8Array): Promise<{ pdfjs: PdfJs; doc: PdfDoc; de
   });
   const destroy = () => task.destroy().catch(() => {});
   try {
-    const doc = await task.promise;
+    const doc = await withDeadline(task.promise, deadline);
     return { pdfjs, doc, destroy };
   } catch (e) {
     await destroy();
+    if (e instanceof UnreadableDocumentError) throw e;
     const name = (e as { name?: string })?.name;
     if (name === "PasswordException") throw new UnreadableDocumentError("encrypted");
     throw new UnreadableDocumentError("corrupt");
@@ -93,9 +125,10 @@ async function openPdf(buf: Uint8Array): Promise<{ pdfjs: PdfJs; doc: PdfDoc; de
  * first so font names resolve. `chars` counts every non-space character,
  * including rotated text that is skipped from `items`.
  */
-async function pageText(page: PdfPage, fontNames: Set<string>): Promise<{ items: Item[]; chars: number }> {
+async function pageText(page: PdfPage, fontNames: Set<string>, deadline: number): Promise<{ items: Item[]; chars: number }> {
   const [vx0, vy0] = page.view;
-  const tc = await page.getTextContent();
+  const tc = await withDeadline(page.getTextContent(), deadline);
+  if (tc.items.length > PDF_LIMITS.itemsPerPage) throw new UnreadableDocumentError("corrupt", TOO_COMPLEX);
   // Font family names (commonObjs holds the real names once the operator list has loaded the fonts).
   const boldById = new Map<string, boolean>();
   for (const it of tc.items) {
@@ -154,11 +187,12 @@ export interface PdfPageText {
  * model (the LinkedIn export reader). Same pdf.js setup and error mapping as parsePdf.
  */
 export async function readPdfText(buf: Uint8Array): Promise<{ pages: PdfPageText[]; fonts: string[]; info: PdfInfo }> {
-  const { doc, destroy } = await openPdf(buf);
+  const deadline = Date.now() + PDF_LIMITS.timeMs;
+  const { doc, destroy } = await openPdf(buf, deadline);
   try {
     const info: PdfInfo = { title: null, author: null, subject: null, producer: null };
     try {
-      const meta = (await doc.getMetadata()).info as Record<string, unknown> | undefined;
+      const meta = (await withDeadline(doc.getMetadata(), deadline)).info as Record<string, unknown> | undefined;
       const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
       info.title = str(meta?.Title);
       info.author = str(meta?.Author);
@@ -169,11 +203,11 @@ export async function readPdfText(buf: Uint8Array): Promise<{ pages: PdfPageText
     }
     const fontNames = new Set<string>();
     const pages: PdfPageText[] = [];
-    for (let p = 1; p <= doc.numPages; p++) {
-      const page = await doc.getPage(p);
+    for (let p = 1; p <= Math.min(doc.numPages, PDF_LIMITS.linkedinPages); p++) {
+      const page = await withDeadline(doc.getPage(p), deadline);
       const [vx0, vy0, vx1, vy1] = page.view;
-      await page.getOperatorList();
-      const { items, chars } = await pageText(page, fontNames);
+      await withDeadline(page.getOperatorList(), deadline);
+      const { items, chars } = await pageText(page, fontNames, deadline);
       pages.push({ page: p, width: vx1 - vx0, height: vy1 - vy0, items, chars });
       page.cleanup();
     }
@@ -189,7 +223,8 @@ export function groupPdfLines(items: PdfTextItem[]): { items: PdfTextItem[]; y: 
 }
 
 export async function parsePdf(buf: Uint8Array): Promise<ParsedDocument> {
-  const { pdfjs, doc, destroy } = await openPdf(buf);
+  const deadline = Date.now() + PDF_LIMITS.timeMs;
+  const { pdfjs, doc, destroy } = await openPdf(buf, deadline);
 
   try {
     const OPS = pdfjs.OPS as unknown as Record<string, number>;
@@ -201,13 +236,13 @@ export async function parsePdf(buf: Uint8Array): Promise<ParsedDocument> {
     const textlessPages: number[] = [];
     let columns = 1;
 
-    for (let p = 1; p <= doc.numPages; p++) {
-      const page = await doc.getPage(p);
+    for (let p = 1; p <= Math.min(doc.numPages, PDF_LIMITS.pages); p++) {
+      const page = await withDeadline(doc.getPage(p), deadline);
       const [vx0, vy0, vx1, vy1] = page.view;
       const pageW = vx1 - vx0;
       const pageH = vy1 - vy0;
-      const ops = await page.getOperatorList();
-      const { items, chars } = await pageText(page, fontNames);
+      const ops = await withDeadline(page.getOperatorList(), deadline);
+      const { items, chars } = await pageText(page, fontNames, deadline);
       if (chars < TEXTLESS_CHARS) textlessPages.push(p);
 
       const lines = groupLines(items);

@@ -21,8 +21,8 @@ export function LinkedInUploader() {
       setError("Upload the PDF from LinkedIn: open your profile, click More (or Resources), then Save to PDF.");
       return;
     }
-    if (f.size > 5 * 1024 * 1024) {
-      setError("That file is over 5 MB. LinkedIn exports are usually well under 1 MB.");
+    if (f.size > 4 * 1024 * 1024) {
+      setError("That file is over 4 MB. LinkedIn exports are usually well under 1 MB.");
       return;
     }
     setFile(f);

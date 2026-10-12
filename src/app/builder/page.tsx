@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { BuilderView } from "@/components/builder/builder-view";
-import { site } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Free ATS-Friendly Resume Builder with AI",
+export const metadata: Metadata = pageMetadata({
+  path: "/builder",
+  title: "ATS-Friendly Resume Builder: Free, No Sign-up",
+  socialTitle: "Free ATS-friendly resume builder",
   description:
-    "Build an ATS-friendly resume from your own notes. Enter the role you want, your experience and skills; AI writes clear bullets without inventing anything. Choose a template and download Word or PDF.",
-  alternates: { canonical: "/builder" },
-  openGraph: { url: "/builder", title: `Free ATS-Friendly Resume Builder | ${site.name}` },
-};
+    "Free ATS-friendly resume builder. Turn your own notes into clear, parser-safe bullets, pick a clean template and download Word or PDF. No sign-up needed.",
+  keywords: ["ATS friendly resume builder", "free resume builder", "AI resume builder", "resume builder Word PDF"],
+});
 
 export default function BuilderPage() {
   return <BuilderView />;

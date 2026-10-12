@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { guides, site } from "@/lib/site";
+import { guides } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Resume & ATS Guides",
+export const metadata: Metadata = pageMetadata({
+  path: "/guides",
+  title: "Resume & ATS Guides: How Resumes Are Really Read",
   description:
     "Plain-English guides to how applicant tracking systems read resumes: formatting that parses, keyword matching, and what ATS really do with your application.",
-  alternates: { canonical: "/guides" },
-  openGraph: { url: "/guides", title: `Resume & ATS Guides | ${site.name}` },
-};
+});
 
 export default function GuidesIndex() {
   return (

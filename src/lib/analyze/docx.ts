@@ -22,6 +22,7 @@ import { UnreadableDocumentError } from "./errors";
 import { collapse, normaliseText, truncate, wordCount } from "./text";
 import { cleanFontName } from "./fonts";
 import { findDateRanges } from "./dates";
+import { assertSafeZip, UnsafeZipError } from "@/lib/security/zip-guard";
 
 type XNode = Record<string, unknown>;
 
@@ -463,6 +464,19 @@ function readBlocks(ctx: Ctx, container: XNode): Line[] {
 /* ---------------- entry ---------------- */
 
 export async function parseDocx(buf: Uint8Array): Promise<ParsedDocument> {
+  // Zip-bomb / entity-bomb guard: bounds everything jszip and mammoth inflate below.
+  try {
+    assertSafeZip(buf);
+  } catch (e) {
+    if (e instanceof UnsafeZipError) {
+      throw new UnreadableDocumentError(
+        "corrupt",
+        "This Word file is unusually large or complex inside, so we couldn't open it safely. Re-save it from Word or Google Docs and try again.",
+      );
+    }
+    throw new UnreadableDocumentError("corrupt");
+  }
+
   let zip: JSZip;
   try {
     zip = await JSZip.loadAsync(buf);

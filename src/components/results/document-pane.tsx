@@ -70,12 +70,15 @@ export function PdfPages({ file }: { file: Blob }) {
         const pdfjs = await loadPdfJs();
         const data = new Uint8Array(await file.arrayBuffer());
         doc = await pdfjs.getDocument({ data }).promise;
+        // A newer render may have started while this one was loading: never clear its canvases.
+        if (cancelled) return;
         el.replaceChildren();
         const width = el.clientWidth || 600;
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
         for (let n = 1; n <= Math.min(doc.numPages, 6); n++) {
           if (cancelled) return;
           const page = await doc.getPage(n);
+          if (cancelled) return;
           const base = page.getViewport({ scale: 1 });
           const viewport = page.getViewport({ scale: (width / base.width) * dpr });
           const canvas = document.createElement("canvas");

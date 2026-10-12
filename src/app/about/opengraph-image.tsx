@@ -1,0 +1,13 @@
+import { ogCard } from "@/app/_og/card";
+
+export const alt = "About Parsewise";
+export const size = { width: 1200, height: 630 };
+export const contentType = "image/png";
+
+export default function Image() {
+  return ogCard({
+    eyebrow: "About",
+    title: "Resume tools that show their working.",
+    subtitle: "Free, honest tools that show what an applicant tracking system actually reads.",
+  });
+}

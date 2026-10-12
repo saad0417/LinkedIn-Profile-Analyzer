@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, orgRef } from "@/components/json-ld";
 import { Uploader } from "@/components/uploader";
 import { faq } from "@/lib/faq";
 import { aiEnabled } from "@/lib/ai-enabled";
 import { guides, site } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  alternates: { canonical: "/" },
-};
+export const metadata: Metadata = pageMetadata({
+  path: "/",
+  title: `ATS Resume Checker: See What the Parser Sees | ${site.name}`,
+  absoluteTitle: true,
+  socialTitle: "Free ATS resume checker: see what the parser sees",
+  description: site.description,
+  keywords: ["ATS resume checker", "free ATS resume checker", "ATS resume scanner", "resume parser test", "resume keyword match"],
+});
 
 const steps: { n: string; title: string; body: string; bodyNoAi?: string }[] = [
   {
@@ -110,7 +116,8 @@ export default function Home() {
             "@context": "https://schema.org",
             "@type": "WebApplication",
             name: `${site.name} ATS Resume Checker`,
-            url: site.url,
+            url: `${site.url}/`,
+            publisher: orgRef(),
             description: site.description,
             applicationCategory: "BusinessApplication",
             operatingSystem: "Any",
@@ -132,12 +139,6 @@ export default function Home() {
               acceptedAnswer: { "@type": "Answer", text: f.a },
             })),
           },
-          {
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            name: site.name,
-            url: site.url,
-          },
         ]}
       />
 
@@ -145,11 +146,7 @@ export default function Home() {
       <section className="container-page pt-12 sm:pt-20">
         <div className="grid items-center gap-10 lg:grid-cols-[1.3fr_1fr] lg:gap-14">
           <div>
-            <p className="chip text-ink-muted">
-              <span className="h-1.5 w-1.5 rounded-full bg-good" aria-hidden="true" />
-              Free ATS resume checker. No sign-up, nothing stored.
-            </p>
-            <h1 className="mt-6 font-display text-[2.4rem] leading-[1.12] tracking-tight sm:text-[3.4rem] lg:text-[3.9rem]">
+            <h1 className="font-display text-[2.4rem] leading-[1.12] tracking-tight sm:text-[3.4rem] lg:text-[3.9rem]">
               See your resume the way the <span className="text-accent">ATS</span> sees it.
             </h1>
             <p className="mt-6 max-w-xl text-[1.08rem] leading-relaxed text-ink-muted">

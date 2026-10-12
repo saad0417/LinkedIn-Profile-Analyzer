@@ -1,6 +1,7 @@
 import type { DocKind } from "@/lib/types";
 
-export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+/** 4 MB: under Vercel's 4.5 MB request-body limit, with room for multipart overhead. */
+export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
 export type UploadCheck =
   | { ok: true; kind: DocKind }
@@ -19,7 +20,7 @@ export function sniffUpload(buf: Uint8Array): UploadCheck {
     return { ok: false, code: "bad_type", error: "The file is empty." };
   }
   if (buf.byteLength > MAX_UPLOAD_BYTES) {
-    return { ok: false, code: "too_large", error: "Files must be 5 MB or smaller." };
+    return { ok: false, code: "too_large", error: "Files must be 4 MB or smaller." };
   }
 
   const head = new TextDecoder("latin1").decode(buf.subarray(0, 1024));

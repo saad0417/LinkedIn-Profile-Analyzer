@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { LLM_SETTINGS, LLMProviderError, type CompleteOptions, type LLMProvider } from "./core";
 
 /** Gemini via the maintained `@google/genai` SDK. */
@@ -21,9 +21,14 @@ export class GeminiProvider implements LLMProvider {
 
   async complete(system: string, user: string, options: CompleteOptions = {}): Promise<string> {
     const timeoutMs = options.timeoutMs ?? LLM_SETTINGS.timeoutMs;
-    // 2.5 Flash models think by default; thinking tokens would eat the small
+    // Thinking tokens are billed and add latency, and these short rewriting tasks
+    // don't need them: 2.5 Flash takes a zero budget, Gemini 3+ the minimal level.
     // output budget and add latency for these short tasks.
-    const thinking = /2\.5-flash/i.test(this.model) ? { thinkingConfig: { thinkingBudget: 0 } } : {};
+    const thinking = /2\.5-flash/i.test(this.model)
+      ? { thinkingConfig: { thinkingBudget: 0 } }
+      : /gemini-[3-9]/i.test(this.model)
+        ? { thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL } }
+        : {};
     try {
       const res = await this.client.models.generateContent({
         model: this.model,

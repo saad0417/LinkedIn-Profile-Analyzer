@@ -15,7 +15,9 @@ export function sanitizeDocHtml(html: string): string {
   let out = html.replace(/<(script|style|iframe|object|embed|svg|math|template)[\s\S]*?<\/\1\s*>/gi, "");
   out = out.replace(/<!--[\s\S]*?-->/g, "");
 
-  return out.replace(/<\/?([a-zA-Z0-9]+)([^>]*)>/g, (full, rawTag: string, rawAttrs: string) => {
+  // Every "<…>" is rebuilt from the allow-list; any other "<" (e.g. an unterminated tag) is escaped.
+  return out.replace(/<\/?([a-zA-Z0-9]+)([^>]*)>|</g, (full, rawTag: string | undefined, rawAttrs: string) => {
+    if (rawTag === undefined) return "&lt;";
     const tag = rawTag.toLowerCase();
     if (!ALLOWED_TAGS.has(tag)) return "";
     if (full.startsWith("</")) return `</${tag}>`;

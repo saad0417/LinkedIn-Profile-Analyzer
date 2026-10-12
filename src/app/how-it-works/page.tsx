@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, ldIds, orgRef } from "@/components/json-ld";
 import { site } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/how-it-works",
   title: "How Our ATS Resume Scoring Works",
   description:
     "The exact method behind Parse Integrity, Content and Job Match scores: every check, what it looks for, how much it weighs, and what we deliberately don't claim.",
-  alternates: { canonical: "/how-it-works" },
-  openGraph: { url: "/how-it-works", title: `How Our ATS Resume Scoring Works | ${site.name}` },
-};
+});
 
 type Row = { check: string; looks: string; impact: "High" | "Medium" | "Low" };
 
@@ -58,7 +58,9 @@ export default function HowItWorks() {
           headline: "How our ATS resume scoring works",
           description: metadata.description,
           url: `${site.url}/how-it-works`,
-          author: { "@type": "Organization", name: site.name },
+          author: { "@type": "Organization", "@id": ldIds.organization(), name: site.name, url: `${site.url}/` },
+          publisher: orgRef(),
+          isPartOf: { "@id": ldIds.website() },
         }}
       />
       <div className="max-w-3xl">

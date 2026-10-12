@@ -5,7 +5,7 @@ import { useId, useRef, useState } from "react";
 import { analyzeFile, setSession } from "@/lib/client/session";
 import { AnalyzingPanel, Busy } from "@/components/loading";
 
-const MAX_BYTES = 5 * 1024 * 1024;
+const MAX_BYTES = 4 * 1024 * 1024;
 const ACCEPT =
   ".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -36,7 +36,7 @@ export function Uploader({ autoFocusJd = false }: { autoFocusJd?: boolean }) {
       return;
     }
     if (f.size > MAX_BYTES) {
-      setError(`That file is ${formatSize(f.size)}. The limit is 5 MB.`);
+      setError(`That file is ${formatSize(f.size)}. The limit is 4 MB.`);
       return;
     }
     setFile(f);
@@ -128,7 +128,7 @@ export function Uploader({ autoFocusJd = false }: { autoFocusJd?: boolean }) {
                   Drop your resume here, or <span className="underline decoration-accent underline-offset-4">browse</span>
                 </p>
                 <p id={ids.hint} className="mt-1 text-sm text-ink-muted">
-                  PDF or Word (.docx), up to 5 MB
+                  PDF or Word (.docx), up to 4 MB
                 </p>
               </div>
             )}

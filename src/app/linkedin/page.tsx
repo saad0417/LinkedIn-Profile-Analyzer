@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, orgRef } from "@/components/json-ld";
 import { LinkedInUploader } from "@/components/linkedin/linkedin-uploader";
 import { aiEnabled } from "@/lib/ai-enabled";
 import { site } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Free LinkedIn Profile Analyzer: score and improve your profile",
+export const metadata: Metadata = pageMetadata({
+  path: "/linkedin",
+  title: "LinkedIn Profile Analyzer: Free Score and Fixes",
+  socialTitle: "Free LinkedIn profile analyzer: score and fix your profile",
   description:
-    "Upload your LinkedIn profile PDF and get a score out of 100 with specific fixes for your headline, About section, experience, skills and contact details, plus an optional AI review. Nothing is stored.",
-  alternates: { canonical: "/linkedin" },
-  openGraph: { url: "/linkedin", title: `Free LinkedIn Profile Analyzer | ${site.name}` },
-};
+    "Free LinkedIn profile checker and analyzer: upload your profile PDF for a score out of 100 and clear fixes for your headline, About, experience and skills.",
+  keywords: ["LinkedIn profile analyzer", "LinkedIn profile checker", "LinkedIn profile score", "LinkedIn headline checker"],
+});
 
 const exportSteps = [
   ["Open your profile", "On linkedin.com, click your photo at the top and choose View Profile."],
@@ -59,6 +61,7 @@ export default function LinkedInPage() {
             "@type": "WebApplication",
             name: `${site.name} LinkedIn Profile Analyzer`,
             url: `${site.url}/linkedin`,
+            publisher: orgRef(),
             applicationCategory: "BusinessApplication",
             operatingSystem: "Any",
             offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },

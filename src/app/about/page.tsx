@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, ldIds, orgRef } from "@/components/json-ld";
 import { site } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "About",
+export const metadata: Metadata = pageMetadata({
+  path: "/about",
+  title: `About ${site.name}: Free, Honest Resume Tools`,
+  absoluteTitle: true,
   description:
     "Why Parsewise exists: free, honest tools that show job seekers what an applicant tracking system actually reads from their resume and LinkedIn profile.",
-  alternates: { canonical: "/about" },
-};
+});
 
 const principles: [string, string][] = [
   [
@@ -38,6 +40,8 @@ export default function About() {
           "@type": "AboutPage",
           name: `About ${site.name}`,
           url: `${site.url}/about`,
+          about: orgRef(),
+          isPartOf: { "@id": ldIds.website() },
         }}
       />
       <div className="max-w-3xl">

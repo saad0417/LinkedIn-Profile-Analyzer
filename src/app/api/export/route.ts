@@ -6,11 +6,14 @@
  * GET /api/export?template=<any TemplateId>&format=docx|pdf
  *   The template filled with fictional sample content ("download template").
  *   Deterministic, so the bytes are cached.
+ *
+ * Limits: see LIMITS.export / LIMITS.exportSample in rate-limit.ts.
  */
 import { cacheLife } from "next/cache";
 import type { NextRequest } from "next/server";
 import type { TemplateId } from "@/lib/types";
-import { hit, clientIp } from "@/lib/security/rate-limit";
+import { clientIp, limitMessage, rateLimit } from "@/lib/security/rate-limit";
+import { declaresTooLarge, isCrossSite, isJsonContentType, parseJson, readBodyCapped } from "@/lib/security/request";
 import {
   EXPORT_LIMITS,
   MIME,
@@ -24,9 +27,8 @@ import {
   type ExportFormat,
 } from "@/lib/export";
 
-
-const HOUR = 60 * 60 * 1000;
-const EXPORTS_PER_HOUR = 30;
+// Rendering takes well under a second; this is a ceiling, not an expectation.
+export const maxDuration = 30;
 
 type ExportErrorCode = "bad_request" | "too_large" | "rate_limited" | "server_error";
 
@@ -37,7 +39,7 @@ function error(code: ExportErrorCode, status: number, message: string, extra?: R
   );
 }
 
-function fileResponse(bytes: Uint8Array, format: ExportFormat, filename: string, cacheControl: string) {
+function fileResponse(bytes: Uint8Array, format: ExportFormat, filename: string, cacheControl: string, extra?: Record<string, string>) {
   return new Response(bytes.slice(), {
     status: 200,
     headers: {
@@ -46,51 +48,39 @@ function fileResponse(bytes: Uint8Array, format: ExportFormat, filename: string,
       "Content-Length": String(bytes.byteLength),
       "Cache-Control": cacheControl,
       "X-Content-Type-Options": "nosniff",
+      ...extra,
     },
   });
 }
 
+/** Order: cross-site / content-type / declared size (free) -> rate limit -> read body (capped) -> validate -> render. */
 export async function POST(request: Request): Promise<Response> {
-  const type = request.headers.get("content-type") ?? "";
-  if (!type.toLowerCase().includes("application/json")) {
-    return error("bad_request", 400, "Send the request as JSON.");
-  }
-  const declared = Number(request.headers.get("content-length") ?? 0);
-  if (declared > EXPORT_LIMITS.bodyBytes) return error("too_large", 413, "That resume is too large to export.");
+  if (isCrossSite(request)) return error("bad_request", 403, "Cross-site requests aren't allowed.");
+  if (!isJsonContentType(request)) return error("bad_request", 400, "Send the request as JSON.");
+  if (declaresTooLarge(request, EXPORT_LIMITS.bodyBytes)) return error("too_large", 413, "That resume is too large to export.");
 
-  let raw: string;
-  try {
-    raw = await request.text();
-  } catch {
-    return error("bad_request", 400, "That request couldn't be read.");
-  }
-  if (Buffer.byteLength(raw, "utf8") > EXPORT_LIMITS.bodyBytes) {
-    return error("too_large", 413, "That resume is too large to export.");
-  }
+  const limit = await rateLimit("export", clientIp(request));
+  if (!limit.ok) return error("rate_limited", 429, limitMessage("export", limit), limit.headers);
+  const rl = limit.headers;
 
-  let body: unknown;
-  try {
-    body = JSON.parse(raw);
-  } catch {
-    return error("bad_request", 400, "Request body isn't valid JSON.");
+  const raw = await readBodyCapped(request, EXPORT_LIMITS.bodyBytes);
+  if (!raw.ok) {
+    return raw.reason === "too_large"
+      ? error("too_large", 413, "That resume is too large to export.", rl)
+      : error("bad_request", 400, "That request couldn't be read.", rl);
   }
+  const body = parseJson(raw.bytes);
+  if (body === undefined) return error("bad_request", 400, "Request body isn't valid JSON.", rl);
   const parsed = parseExportRequest(body);
-  if (!parsed.ok) return error("bad_request", 400, parsed.error);
-
-  const limit = hit(`export:${clientIp(request)}`, EXPORTS_PER_HOUR, HOUR);
-  if (!limit.ok) {
-    return error("rate_limited", 429, "You've exported a lot of files this hour. Please try again a little later.", {
-      "Retry-After": String(limit.retryAfter),
-    });
-  }
+  if (!parsed.ok) return error("bad_request", 400, parsed.error, rl);
 
   const { content, template, format } = parsed.value;
   try {
     const bytes = await renderResume(content, template, format);
-    return fileResponse(bytes, format, resumeFileName(content.name, format), "no-store");
+    return fileResponse(bytes, format, resumeFileName(content.name, format), "no-store", rl);
   } catch (err) {
     console.error(`[export] render failed: ${(err as Error)?.name ?? "Error"}`);
-    return error("server_error", 500, "We couldn't build that file. Please try again.");
+    return error("server_error", 500, "We couldn't build that file. Please try again.", rl);
   }
 }
 
@@ -108,7 +98,12 @@ export async function GET(request: NextRequest): Promise<Response> {
   if (!isTemplateId(template)) return error("bad_request", 400, "Unknown template.");
   if (!isFormat(format)) return error("bad_request", 400, `"format" must be "docx" or "pdf".`);
 
+  const limit = await rateLimit("exportSample", clientIp(request));
+  if (!limit.ok) return error("rate_limited", 429, limitMessage("exportSample", limit), limit.headers);
+
   const bytes = await sampleTemplate(template, format);
   const filename = `${getTemplate(template)!.name.replace(/\s+/g, "-")}-Resume-Template.${format}`;
+  // No RateLimit-* headers here: the response is publicly cacheable, and
+  // per-client counters must never be stored in a shared cache.
   return fileResponse(bytes, format, filename, "public, max-age=86400, stale-while-revalidate=604800");
 }

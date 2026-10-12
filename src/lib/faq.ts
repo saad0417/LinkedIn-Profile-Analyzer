@@ -33,6 +33,6 @@ export const faq: { q: string; a: string }[] = [
   },
   {
     q: "Which file types can I upload?",
-    a: "PDF and Word (.docx), up to 5 MB. Older .doc files need to be re-saved as .docx first. We check the file's contents rather than trusting its extension.",
+    a: "PDF and Word (.docx), up to 4 MB. Older .doc files need to be re-saved as .docx first. We check the file's contents rather than trusting its extension.",
   },
 ];

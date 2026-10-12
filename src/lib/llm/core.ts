@@ -20,6 +20,19 @@ export class LLMUnavailableError extends Error {
   }
 }
 
+/** Every configured provider's site-wide quota is used up for now (see budget.ts). */
+export class LLMBudgetError extends Error {
+  readonly scope: "minute" | "day";
+  /** Seconds until the soonest provider has budget again. */
+  readonly retryAfter: number;
+  constructor(scope: "minute" | "day", retryAfter: number) {
+    super("All AI providers are at their quota");
+    this.name = "LLMBudgetError";
+    this.scope = scope;
+    this.retryAfter = retryAfter;
+  }
+}
+
 /** Thrown by providers for upstream failures. Carries only a status code, never provider text. */
 export class LLMProviderError extends Error {
   readonly status: number | null;

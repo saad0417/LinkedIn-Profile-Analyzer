@@ -36,11 +36,20 @@ export function TemplateLibrary() {
       </div>
 
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {shown.map((t) => (
+        {shown.map((t, i) => (
           <article key={t.id} className="glass flex flex-col p-4">
             <div className="relative aspect-[8.5/11] overflow-hidden rounded-[var(--radius)] bg-white shadow-[0_1px_2px_rgba(60,40,20,0.08)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={t.preview} alt={`Preview of the ${t.name} resume template`} loading="lazy" className="h-full w-full object-cover object-top" />
+              <img
+                src={t.preview}
+                alt={`Preview of the ${t.name} resume template`}
+                // The first row is the largest thing on screen (LCP): load it immediately.
+                loading={i < 3 ? "eager" : "lazy"}
+                fetchPriority={i === 0 ? "high" : "auto"}
+                width={800}
+                height={1036}
+                className="h-full w-full object-cover object-top"
+              />
             </div>
             <div className="flex flex-1 flex-col px-2 pb-2 pt-5">
               <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">

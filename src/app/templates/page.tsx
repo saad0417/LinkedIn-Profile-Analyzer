@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, ldIds } from "@/components/json-ld";
 import { site } from "@/lib/site";
 import { TemplateLibrary } from "@/components/templates/template-library";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Free ATS-Friendly Resume Templates (Word & PDF)",
-  keywords: ["ATS resume template", "ATS friendly resume template", "free resume template Word", "resume template PDF"],
+export const metadata: Metadata = pageMetadata({
+  path: "/templates",
+  title: "ATS Resume Templates: Free Word & PDF Downloads",
+  socialTitle: "Free ATS-friendly resume templates (Word & PDF)",
   description:
-    "Free resume templates in Word and PDF: ATS-safe classic and modern designs that parse cleanly, plus creative layouts for emailing a person. Fill one in with the AI resume builder.",
-  alternates: { canonical: "/templates" },
-  openGraph: { url: "/templates", title: `Free ATS-Friendly Resume Templates | ${site.name}` },
-};
+    "Free ATS resume templates in Word and PDF: single-column classic and modern designs that parse cleanly, plus creative layouts for when a person reads it first.",
+  keywords: ["ATS resume templates", "ATS friendly resume template", "free resume template Word", "resume template PDF"],
+});
 
 const rules: [string, string][] = [
   ["Single column", "Parsers read left to right across the page. One column keeps your reading order intact."],
@@ -32,6 +33,7 @@ export default function TemplatesPage() {
           name: "ATS-friendly resume templates",
           url: `${site.url}/templates`,
           description: metadata.description,
+          isPartOf: { "@id": ldIds.website() },
         }}
       />
       <div className="max-w-3xl">
