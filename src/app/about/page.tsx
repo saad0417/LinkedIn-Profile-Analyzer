@@ -9,7 +9,7 @@ export const metadata: Metadata = pageMetadata({
   title: `About ${site.name}: Free, Honest Resume Tools`,
   absoluteTitle: true,
   description:
-    "Why Parsewise exists: free, honest tools that show job seekers what an applicant tracking system actually reads from their resume and LinkedIn profile.",
+    "Why Parsewiser exists: free, honest tools that show job seekers what an applicant tracking system actually reads from their resume and LinkedIn profile.",
 });
 
 const principles: [string, string][] = [

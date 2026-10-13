@@ -122,7 +122,7 @@ export function LinkedInUploader() {
         </p>
       )}
       {busy && (
-        <div className="absolute inset-0 z-10 flex cursor-progress items-center justify-center overflow-y-auto bg-[rgba(255,254,251,0.88)] p-6 backdrop-blur-md sm:p-8">
+        <div className="absolute inset-0 z-10 flex cursor-progress items-center justify-center overflow-y-auto bg-[rgba(255,254,252,0.88)] p-6 backdrop-blur-md sm:p-8">
           <AnalyzingPanel
             title={busy === "sample" ? "Analyzing the sample profile" : "Analyzing your profile"}
             steps={[

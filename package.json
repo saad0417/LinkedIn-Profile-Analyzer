@@ -1,5 +1,5 @@
 {
-  "name": "parsewise",
+  "name": "parsewiser",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@google/genai": "^2.28.0",
+    "@vercel/analytics": "^2.0.1",
     "docx": "^9.10.0",
     "fast-xml-parser": "^5.11.2",
     "jszip": "^3.10.2",

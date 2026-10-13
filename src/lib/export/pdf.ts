@@ -823,8 +823,8 @@ export async function renderPdf(input: ResumeContent, template: TemplateId): Pro
   doc.setTitle(title, { showInWindowTitleBar: false });
   if (content.name) doc.setAuthor(clean(content.name));
   doc.setSubject("Resume");
-  doc.setCreator("Parsewise");
-  doc.setProducer("Parsewise");
+  doc.setCreator("Parsewiser");
+  doc.setProducer("Parsewiser");
   doc.setLanguage("en-US");
 
   return doc.save({ useObjectStreams: false });

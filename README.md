@@ -1,4 +1,4 @@
-# Parsewise
+# Parsewiser
 
 ATS resume checker, resume builder and LinkedIn profile analyzer. Next.js 16 (App Router, Cache Components), TypeScript, Tailwind v4. No database: uploads are processed in memory and discarded.
 

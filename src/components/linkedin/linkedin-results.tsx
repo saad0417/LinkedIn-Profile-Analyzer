@@ -197,7 +197,7 @@ function AiReview({ session }: { session: LinkedInSession }) {
       <h2 id="review-h" className="mt-2 font-serif text-[1.85rem] leading-tight">
         What a recruiter would notice
       </h2>
-      <p className="mt-3 max-w-3xl text-[1.02rem] leading-relaxed">{review.verdict}</p>
+      <p className="mt-3 max-w-3xl text-[1.05rem] font-[500] leading-relaxed text-ink">{review.verdict}</p>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         {review.strengths.length > 0 && (
@@ -279,28 +279,28 @@ function ProfileExtract({ result }: { result: LinkedInAnalysis }) {
         {rows.map(([k, v]) => (
           <div key={k}>
             <dt className="text-xs text-ink-muted">{k}</dt>
-            <dd className={v ? "break-words" : "text-ink-faint"}>{v ?? "not found"}</dd>
+            <dd className={v ? "break-words font-medium text-ink" : "text-ink-faint"}>{v ?? "not found"}</dd>
           </div>
         ))}
         <div>
           <dt className="text-xs text-ink-muted">About</dt>
-          <dd>{p.summary ? `${p.summary.length.toLocaleString("en-US")} characters` : <span className="text-ink-faint">empty</span>}</dd>
+          <dd className="font-medium">{p.summary ? `${p.summary.length.toLocaleString("en-US")} characters` : <span className="text-ink-faint">empty</span>}</dd>
         </div>
         <div>
           <dt className="text-xs text-ink-muted">Experience</dt>
-          <dd>
+          <dd className="font-medium">
             {p.experience.length} {p.experience.length === 1 ? "role" : "roles"},{" "}
             {p.experience.filter((r) => r.description && r.description.length > 40).length} with descriptions
           </dd>
         </div>
         <div>
           <dt className="text-xs text-ink-muted">Top skills</dt>
-          <dd>{p.topSkills.length ? p.topSkills.join(", ") : <span className="text-ink-faint">none listed</span>}</dd>
+          <dd className="font-medium">{p.topSkills.length ? p.topSkills.join(", ") : <span className="text-ink-faint">none listed</span>}</dd>
         </div>
         {p.certifications.length > 0 && (
           <div>
             <dt className="text-xs text-ink-muted">Certifications</dt>
-            <dd>{p.certifications.length}</dd>
+            <dd className="font-medium">{p.certifications.length}</dd>
           </div>
         )}
       </dl>

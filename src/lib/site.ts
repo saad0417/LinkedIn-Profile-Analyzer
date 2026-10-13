@@ -26,7 +26,7 @@ function resolveSiteUrl(): string {
     try {
       url = new URL(raw);
     } catch {
-      throw new Error(`NEXT_PUBLIC_SITE_URL is not a valid absolute URL (expected e.g. https://parsewise.app).`);
+      throw new Error(`NEXT_PUBLIC_SITE_URL is not a valid absolute URL (expected e.g. https://parsewiser.app).`);
     }
     if (url.protocol !== "https:" && url.protocol !== "http:") {
       throw new Error(`NEXT_PUBLIC_SITE_URL must start with https:// (got ${url.protocol}).`);
@@ -42,19 +42,19 @@ function resolveSiteUrl(): string {
   if (process.env.NODE_ENV !== "production") return "http://localhost:3000";
 
   throw new Error(
-    "NEXT_PUBLIC_SITE_URL is not set. Set it to the public origin (e.g. https://parsewise.app) before building for production.",
+    "NEXT_PUBLIC_SITE_URL is not set. Set it to the public origin (e.g. https://parsewiser.app) before building for production.",
   );
 }
 
 export const site = {
-  name: "Parsewise",
+  name: "Parsewiser",
   tagline: "See your resume the way an applicant tracking system reads it.",
   description:
     "Free ATS resume checker. Upload your resume to see exactly what an applicant tracking system extracts, what it drops and how to fix it. Nothing is stored.",
   url: resolveSiteUrl(),
   locale: "en_US",
   /** Brand colour used for theme-color, the manifest and generated images. */
-  paper: "#faf8f4",
+  paper: "#faf8f5",
 } as const;
 
 export const nav = [
@@ -69,7 +69,7 @@ export const guides = [
   {
     slug: "ats-resume-format",
     title: "How to format a resume so an ATS can read it",
-    /** <title> tag: search keyword first, kept under 60 characters with the " | Parsewise" suffix. */
+    /** <title> tag: search keyword first, kept under 60 characters with the " | Parsewiser" suffix. */
     seoTitle: "ATS Resume Format: 8 Rules for Clean Parsing",
     short: "ATS resume format",
     description:
@@ -80,7 +80,7 @@ export const guides = [
   {
     slug: "do-ats-reject-resumes",
     title: "Do applicant tracking systems reject resumes automatically?",
-    seoTitle: "Do ATS Reject Resumes Automatically? What's True",
+    seoTitle: "Do ATS Reject Resumes Automatically? The Truth",
     short: "Do ATS reject resumes?",
     description:
       "Most ATS do not score or auto-reject your resume. The real risk is quieter: a resume that parses badly never comes up when a recruiter searches.",

@@ -16,7 +16,7 @@ import type { TemplateId } from "../src/lib/types";
 const ROOT = resolve(__dirname, "..");
 const OUT = join(ROOT, "fixtures");
 const SAMPLE_OUT = join(ROOT, "public", "samples");
-const SCRATCH = process.env.FIXTURE_SCRATCH ?? join(tmpdir(), "parsewise-fixtures");
+const SCRATCH = process.env.FIXTURE_SCRATCH ?? join(tmpdir(), "parsewiser-fixtures");
 
 /* ---------------- content helpers ---------------- */
 

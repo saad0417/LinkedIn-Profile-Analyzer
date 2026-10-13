@@ -1,6 +1,6 @@
 # SEO launch checklist
 
-A step-by-step for getting Parsewise live and indexed. The site already ships the technical pieces:
+A step-by-step for getting Parsewiser live and indexed. The site already ships the technical pieces:
 per-page titles, descriptions and canonicals, `sitemap.xml`, `robots.txt`, a web manifest, icons,
 Open Graph images, and structured data. What's left is accounts, DNS and patience.
 
@@ -43,8 +43,8 @@ You can launch on the free Vercel address now and move to a domain later.
 
 ## 1. Domain
 
-1. Buy the domain (any registrar). Decide on **one** host, apex (`parsewise.app`) or `www`, and stick with it.
-2. In Vercel → Project → Settings → Domains, add both `parsewise.app` and `www.parsewise.app`, and set the
+1. Buy the domain (any registrar). Decide on **one** host, apex (`parsewiser.app`) or `www`, and stick with it.
+2. In Vercel → Project → Settings → Domains, add both `parsewiser.app` and `www.parsewiser.app`, and set the
    one you don't use to **redirect (308)** to the one you do. Follow Vercel's DNS instructions at your registrar.
 3. Optional but tidy: redirect the `*.vercel.app` production alias to your domain too. The canonical tags
    already point at your domain, so this is belt and braces.
@@ -53,7 +53,7 @@ You can launch on the free Vercel address now and move to a domain later.
 
 | Variable | Environments | Value |
 |---|---|---|
-| `NEXT_PUBLIC_SITE_URL` | Production | `https://parsewise.app` (your chosen host, no trailing slash) |
+| `NEXT_PUBLIC_SITE_URL` | Production | `https://parsewiser.app` (your chosen host, no trailing slash) |
 | `GOOGLE_SITE_VERIFICATION` | Production | Only if you verify by meta tag (step 4b). The `content` value Google gives you. |
 | `BING_SITE_VERIFICATION` | Production | Only if you verify Bing by meta tag. Rendered as `<meta name="msvalidate.01">`. |
 
@@ -74,10 +74,10 @@ All of these are read **at build time**, so redeploy after changing any of them.
 Deploy, then check on the live domain:
 
 ```bash
-curl -s https://parsewise.app/robots.txt          # Sitemap: line must show your domain
-curl -s https://parsewise.app/sitemap.xml | head  # 12 URLs, all on your domain
-curl -s https://parsewise.app/ | grep -o '<link rel="canonical"[^>]*>'
-curl -sI https://parsewise.app/opengraph-image | grep -i content-type   # image/png
+curl -s https://parsewiser.app/robots.txt          # Sitemap: line must show your domain
+curl -s https://parsewiser.app/sitemap.xml | head  # 12 URLs, all on your domain
+curl -s https://parsewiser.app/ | grep -o '<link rel="canonical"[^>]*>'
+curl -sI https://parsewiser.app/opengraph-image | grep -i content-type   # image/png
 ```
 
 Preview deployments: Vercel sends `X-Robots-Tag: noindex` on preview URLs by default. Check one with
@@ -91,17 +91,17 @@ social-card previewer (e.g. opengraph.xyz) to confirm the markup and images.
 Go to <https://search.google.com/search-console> and add a property.
 
 **a. Domain property via DNS (recommended).** Covers `http`/`https`, apex and `www` in one property.
-Choose *Domain*, enter `parsewise.app`, copy the `google-site-verification=…` TXT record, add it at your
+Choose *Domain*, enter `parsewiser.app`, copy the `google-site-verification=…` TXT record, add it at your
 DNS provider, and click Verify (DNS can take a few minutes to an hour). Leave the TXT record in place.
 
-**b. URL-prefix property via meta tag (alternative).** Choose *URL prefix*, enter `https://parsewise.app/`,
+**b. URL-prefix property via meta tag (alternative).** Choose *URL prefix*, enter `https://parsewiser.app/`,
 pick *HTML tag*, and copy only the `content="…"` value. Set it as `GOOGLE_SITE_VERIFICATION` in Vercel,
-redeploy, confirm `curl -s https://parsewise.app/ | grep google-site-verification` shows it, then click
+redeploy, confirm `curl -s https://parsewiser.app/ | grep google-site-verification` shows it, then click
 Verify. Keep the variable set, because removing the tag can un-verify the property.
 
 Then:
 
-1. **Sitemaps** → submit `https://parsewise.app/sitemap.xml`. Status should become *Success* with 12 URLs discovered.
+1. **Sitemaps** → submit `https://parsewiser.app/sitemap.xml`. Status should become *Success* with 12 URLs discovered.
 2. **URL Inspection** → inspect each key page and click **Request indexing** (there's a daily quota, so do
    the important ones first):
    `/`, `/linkedin`, `/builder`, `/templates`, `/guides`, `/guides/ats-resume-format`,

@@ -1,6 +1,6 @@
 import { ogCard } from "@/app/_og/card";
 
-export const alt = "Parsewise privacy policy";
+export const alt = "Parsewiser privacy policy";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

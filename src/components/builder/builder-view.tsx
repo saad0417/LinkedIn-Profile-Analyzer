@@ -455,7 +455,7 @@ function Builder({ draft }: { draft: Draft }) {
 /** Shown while AI writes the resume: blocks edits that would be overwritten, and shows what's happening. */
 function WritingOverlay({ role, withJd }: { role: string; withJd: boolean }) {
   return (
-    <div className="fixed inset-0 z-[60] flex cursor-wait items-center justify-center bg-[rgba(250,248,244,0.6)] p-4 backdrop-blur-md">
+    <div className="fixed inset-0 z-[60] flex cursor-wait items-center justify-center bg-[rgba(250,248,245,0.6)] p-4 backdrop-blur-md">
       <div role="status" aria-live="polite" className="glass-strong fade-in w-full max-w-md p-7 sm:p-9">
         <div className="flex items-center gap-4">
           <span className="ai-orb relative h-12 w-12 shrink-0 rounded-full" aria-hidden="true" />

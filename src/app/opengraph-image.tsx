@@ -1,6 +1,6 @@
 import { ogCard } from "@/app/_og/card";
 
-export const alt = "Parsewise: see your resume the way the ATS sees it";
+export const alt = "Parsewiser: see your resume the way the ATS sees it";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

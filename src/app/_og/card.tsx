@@ -43,14 +43,14 @@ export async function ogCard({
           justifyContent: "space-between",
           padding: "56px 72px 60px",
           background:
-            "radial-gradient(760px 520px at 8% 0%, rgba(242,196,150,0.62), rgba(242,196,150,0)), radial-gradient(760px 560px at 100% 100%, rgba(214,222,196,0.75), rgba(214,222,196,0)), #faf8f4",
+            "radial-gradient(760px 520px at 8% 0%, rgba(240,190,152,0.53), rgba(240,190,152,0)), radial-gradient(760px 560px at 100% 100%, rgba(214,222,196,0.75), rgba(214,222,196,0)), #faf8f5",
           color: "#1c1b19",
           fontFamily: "Plex",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", fontFamily: "Barlow", fontSize: 46, letterSpacing: "-0.01em" }}>
-            parsewise<span style={{ color: "#7a4419" }}>.</span>
+            parsewiser<span style={{ color: "#7a4419" }}>.</span>
           </div>
           <div
             style={{
@@ -59,7 +59,7 @@ export async function ogCard({
               color: "#45413a",
               padding: "10px 20px",
               borderRadius: 999,
-              background: "rgba(255,254,251,0.7)",
+              background: "rgba(255,254,252,0.7)",
               border: "1.5px solid rgba(255,255,255,0.95)",
             }}
           >
@@ -73,7 +73,7 @@ export async function ogCard({
             flexDirection: "column",
             padding: "44px 52px 48px",
             borderRadius: 32,
-            background: "rgba(255,254,251,0.64)",
+            background: "rgba(255,254,252,0.64)",
             border: "2px solid rgba(255,255,255,0.92)",
             boxShadow: "0 30px 60px -30px rgba(70,45,20,0.35)",
           }}

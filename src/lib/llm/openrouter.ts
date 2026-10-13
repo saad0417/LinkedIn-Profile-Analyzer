@@ -35,7 +35,7 @@ export class OpenRouterProvider implements LLMProvider {
           "Content-Type": "application/json",
           // Optional attribution headers recognised by OpenRouter.
           "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-          "X-Title": "Parsewise",
+          "X-Title": "Parsewiser",
         },
         body: JSON.stringify({
           model: this.models[0],

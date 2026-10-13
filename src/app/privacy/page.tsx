@@ -67,6 +67,13 @@ export default function Privacy() {
             standard access logs.
           </p>
 
+          <h2>Analytics</h2>
+          <p>
+            We use Vercel Web Analytics to count page views and see which pages are useful. It sets no cookies,
+            doesn&apos;t track you across sites, and only reports aggregated numbers (pages, referrers, country, device
+            type). It never sees your files, results or anything you type.
+          </p>
+
           <h2>No accounts, no ad tracking</h2>
           <p>
             There are no user accounts, no advertising cookies and no selling of data. There is nothing to sell.

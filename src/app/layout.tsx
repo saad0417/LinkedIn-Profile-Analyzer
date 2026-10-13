@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Barlow_Condensed, IBM_Plex_Sans } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -90,6 +91,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </main>
           <SiteFooter />
         </AiProvider>
+        {/* Vercel Web Analytics: cookieless, aggregated page views; served from this site's own domain. */}
+        <Analytics />
       </body>
     </html>
   );

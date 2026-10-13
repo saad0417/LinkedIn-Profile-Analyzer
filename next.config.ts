@@ -16,11 +16,12 @@ const isDev = process.env.NODE_ENV !== "production";
  *
  * - img-src data:/blob:  DOCX preview images are data: URIs; builder previews are blobs.
  * - worker-src blob:     pdf.js (/vendor/pdfjs) may fall back to a blob: worker.
- * - dev only: 'unsafe-eval' (React's dev tooling) and ws: (HMR socket).
+ * - dev only: 'unsafe-eval' (React's dev tooling), ws: (HMR socket) and va.vercel-scripts.com
+ *   (Vercel Analytics' debug script; in production it loads from /_vercel/insights on this origin).
  */
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval' https://va.vercel-scripts.com" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",

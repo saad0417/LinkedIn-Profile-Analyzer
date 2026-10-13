@@ -123,7 +123,7 @@ function IssueCard({
         </div>
 
         <h3 className="mt-2 text-lg font-semibold leading-snug">{c.title}</h3>
-        <p className="mt-2 text-[1.02rem] leading-relaxed text-ink">{c.summary}</p>
+        <p className="mt-2 text-[1.02rem] font-[500] leading-relaxed text-ink">{c.summary}</p>
 
         {c.evidence && c.evidence.length > 0 && targets.length === 0 && (
           <ul className="mt-4 space-y-2">

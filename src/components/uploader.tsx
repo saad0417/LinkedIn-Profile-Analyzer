@@ -175,7 +175,7 @@ export function Uploader({ autoFocusJd = false }: { autoFocusJd?: boolean }) {
       )}
 
       {busy && (
-        <div className="absolute inset-0 z-10 flex cursor-progress items-center justify-center overflow-y-auto bg-[rgba(255,254,251,0.88)] p-6 backdrop-blur-md sm:p-10">
+        <div className="absolute inset-0 z-10 flex cursor-progress items-center justify-center overflow-y-auto bg-[rgba(255,254,252,0.88)] p-6 backdrop-blur-md sm:p-10">
           <AnalyzingPanel
             title={busy === "sample" ? "Checking the sample resume" : "Checking your resume"}
             steps={[

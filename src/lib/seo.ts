@@ -4,7 +4,7 @@ import { site } from "@/lib/site";
 type PageSeo = {
   /** Path from the site root, e.g. "/linkedin". Becomes the canonical and og:url (made absolute via metadataBase). */
   path: `/${string}`;
-  /** Goes through the root "%s | Parsewise" template unless `absoluteTitle` is set. Aim for 60 characters or fewer in total. */
+  /** Goes through the root "%s | Parsewiser" template unless `absoluteTitle` is set. Aim for 60 characters or fewer in total. */
   title: string;
   absoluteTitle?: boolean;
   /** 140 to 160 characters, primary keyword included. */

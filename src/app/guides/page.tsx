@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   path: "/guides",
-  title: "Resume & ATS Guides: How Resumes Are Really Read",
+  title: "Resume & ATS Guides: How Resumes Get Read",
   description:
     "Plain-English guides to how applicant tracking systems read resumes: formatting that parses, keyword matching, and what ATS really do with your application.",
 });
